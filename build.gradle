@@ -2,6 +2,20 @@
 
 buildscript {
     ext.kotlin_version = '1.2.41'
+
+    ext.versions = [
+            'buildTools'      : '27.1.1',
+            'okhttp'          : '3.9.1',
+            'coroutines'      : '0.22.5',
+            'gson'            : '2.8.2',
+            'archComp'        : '1.1.0',
+            'mockito'         : '2.7.19',
+            'espresso'        : '3.0.1',
+            'atsl'            : '1.0.0',
+            'robolectric'     : '3.8',
+            'anko'            : '0.10.5'
+    ]
+
     repositories {
         google()
         jcenter()
