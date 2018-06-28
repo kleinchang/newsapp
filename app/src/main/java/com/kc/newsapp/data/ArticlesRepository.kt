@@ -20,9 +20,9 @@ class ArticlesRepository(private val local: Contract.Local,
 
     override fun fetchArticles(forceUpdate: Boolean) {
         log("fetchArticles $forceUpdate")
-        local.fetchArticles()
-//        if (remote.network.value == null || forceUpdate) {
-//            launch(CommonPool) { remote.fetchArticles() }
-//        }
+        if (remote.network.value == null || forceUpdate) {
+            launch(CommonPool) { remote.fetchArticles() }
+        }
+        //local.fetchArticles()
     }
 }

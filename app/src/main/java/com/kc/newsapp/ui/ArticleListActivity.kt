@@ -47,10 +47,9 @@ class ArticleListActivity : AppCompatActivity() {
 
         viewModel.getArticles().observe(this, Observer {
             rvAdapter.data = it!!
+            list.show()
+            errorView.hide()
         })
-
-        list.show()
-        errorView.hide()
     }
 
     private fun initErrorView(viewModel: ListViewModel) {

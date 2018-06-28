@@ -10,10 +10,12 @@ class ArticlesRemoteData(private val service: ArticlesService) : Contract.Remote
     override val loading = MutableLiveData<Boolean>()
     override val error = MutableLiveData<Boolean>()
 
+    val params = hashMapOf("country" to "us")
+
     override suspend fun fetchArticles(endpoint: String) {
         try {
             loading.postValue(true)
-            service.fetchRecipes(endpoint, 0)
+            service.fetchArticles(endpoint, params)
                     .let {
                         if (it.articles.isNotEmpty())
                             network.postValue(it)
