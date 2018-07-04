@@ -27,6 +27,8 @@ class ListViewModel(context: Context, private val repo: Contract.Repository) : V
             perfLiveData.value = mutableSetOf()
         }
 
+//        val appConfig = AppConfig(prefs)
+
     }
 
 
@@ -39,15 +41,15 @@ class ListViewModel(context: Context, private val repo: Contract.Repository) : V
 //
 //    }
 
-    fun addCountry(country: String) {
-        if (perfLiveData.value == null) {
-            perfLiveData.value = mutableSetOf(country)
-        } else {
-            val set = perfLiveData.value
-            (set as MutableSet).add(country)
-            perfLiveData.value = set
-        }
-    }
+//    fun addCountry(country: String, toAdd: Boolean) {
+//        if (perfLiveData.value == null) {
+//            perfLiveData.value = mutableSetOf(country)
+//        } else {
+//            val set = perfLiveData.value
+//            (set as MutableSet).add(country)
+//            perfLiveData.value = set
+//        }
+//    }
 
     private val _articles: LiveData<Articles> by lazy {
         MediatorLiveData<Articles>().apply {

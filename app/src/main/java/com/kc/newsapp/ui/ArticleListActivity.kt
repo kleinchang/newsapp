@@ -11,7 +11,6 @@ import android.support.v7.widget.PopupMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import com.kc.newsapp.R
 import com.kc.newsapp.data.ArticlesRepository
 import com.kc.newsapp.data.local.ArticlesLocalData
 import com.kc.newsapp.data.remote.ArticlesRemoteData
@@ -21,16 +20,16 @@ import com.kc.newsapp.viewmodel.ListViewModelFactory
 import kotlinx.android.synthetic.main.activity_article_list.*
 import kotlinx.android.synthetic.main.activity_main.*
 import android.view.MenuInflater
-import com.kc.newsapp.SharedPreferenceIntLiveData
-import com.kc.newsapp.SharedPreferenceStringSetLiveData
-import com.kc.newsapp.intLiveData
+import com.kc.newsapp.*
+import com.kc.newsapp.data.util.AppConfig
 
 
 class ArticleListActivity : AppCompatActivity() {
 
     private lateinit var rvAdapter: ArticlesAdapter
     private lateinit var viewModel: ListViewModel
-    val pref by lazy { getSharedPreferences("pref", Context.MODE_PRIVATE) }
+    val pref by lazy { getSharedPreferences("config", Context.MODE_PRIVATE) }
+    private val appConfig by lazy { AppConfig(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,10 +49,17 @@ class ArticleListActivity : AppCompatActivity() {
 //        liveData.value?.let {
 //            liveData.updateValue(it + 1)
 //        }
-        liveData.observe(this, Observer { value -> log("LiveData $value")})
-        pref.edit().putInt("int_key", 3)
+        liveData.observe(this, Observer { value -> log("IntLiveData $value")})
+        pref.edit().putInt("int_key", 3).apply()
         pref.edit().putInt("int_key", 4)
         pref.edit().putInt("int_key", 5)
+
+        val curr = pref.getStringSet(AppConfig.KEY_COUNTRIES, mutableSetOf())
+        log("Curr size: ${curr.size} or ${appConfig.getCountryList()}")
+        pref.stringSetLiveData(AppConfig.KEY_COUNTRIES, curr).observe(this, Observer {
+            value -> log("StringSetLiveData $value")
+        })
+
     }
 
     private fun getViewModel(): ListViewModel {
@@ -116,23 +122,29 @@ class ArticleListActivity : AppCompatActivity() {
         R.id.jp -> {
             item.isChecked = !item.isChecked
             viewModel.countryCode.value = "jp"
-            //viewModel.addCountry("jp")
-            pref.edit().putInt("int_key", 3)
-            true
+            //viewModel.addCountry("jp", item.isChecked)
+            pref.edit().putInt("int_key", 3).apply()
+            appConfig.addRemoveCountry("jp", item.isChecked)
+            log("Country list: ${appConfig.getCountryList()}")
+            false
         }
         R.id.tw -> {
             item.isChecked = !item.isChecked
             viewModel.countryCode.value = "tw"
             //viewModel.addCountry("tw")
-            pref.edit().putInt("int_key", 2)
-            true
+            pref.edit().putInt("int_key", 2).apply()
+            appConfig.addRemoveCountry("tw", item.isChecked)
+            log("Country list: ${appConfig.getCountryList()}")
+            false
         }
         R.id.us -> {
             item.isChecked = !item.isChecked
             viewModel.countryCode.value = "us"
             //viewModel.addCountry("us")
-            pref.edit().putInt("int_key", 1)
-            true
+            pref.edit().putInt("int_key", 1).apply()
+            appConfig.addRemoveCountry("us", item.isChecked)
+            log("Country list: ${appConfig.getCountryList()}")
+            false
         }
         else -> {
             super.onOptionsItemSelected(item)
