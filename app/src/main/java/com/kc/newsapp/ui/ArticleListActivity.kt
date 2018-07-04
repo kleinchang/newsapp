@@ -2,6 +2,7 @@ package com.kc.newsapp.ui
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.DividerItemDecoration
@@ -20,13 +21,16 @@ import com.kc.newsapp.viewmodel.ListViewModelFactory
 import kotlinx.android.synthetic.main.activity_article_list.*
 import kotlinx.android.synthetic.main.activity_main.*
 import android.view.MenuInflater
-
+import com.kc.newsapp.SharedPreferenceIntLiveData
+import com.kc.newsapp.SharedPreferenceStringSetLiveData
+import com.kc.newsapp.intLiveData
 
 
 class ArticleListActivity : AppCompatActivity() {
 
     private lateinit var rvAdapter: ArticlesAdapter
     private lateinit var viewModel: ListViewModel
+    val pref by lazy { getSharedPreferences("pref", Context.MODE_PRIVATE) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,11 +42,23 @@ class ArticleListActivity : AppCompatActivity() {
             initSwipeToRefresh(it)
             initErrorView(it)
         }.apply { fetchArticles() }
+
+
+        var liveData = pref.intLiveData("int_key", 0) as SharedPreferenceIntLiveData
+//        if (liveData.value == null) liveData.updateValue(0)
+//        log("LiveData ${liveData.value}")
+//        liveData.value?.let {
+//            liveData.updateValue(it + 1)
+//        }
+        liveData.observe(this, Observer { value -> log("LiveData $value")})
+        pref.edit().putInt("int_key", 3)
+        pref.edit().putInt("int_key", 4)
+        pref.edit().putInt("int_key", 5)
     }
 
     private fun getViewModel(): ListViewModel {
         val repo = ArticlesRepository(ArticlesLocalData(applicationContext), ArticlesRemoteData(ArticlesService()))
-        return ViewModelProviders.of(this, ListViewModelFactory(repo))[ListViewModel::class.java]
+        return ViewModelProviders.of(this, ListViewModelFactory(applicationContext, repo))[ListViewModel::class.java]
     }
 
     private fun initRecyclerView(viewModel: ListViewModel) {
@@ -53,10 +69,12 @@ class ArticleListActivity : AppCompatActivity() {
         }
         list.adapter = rvAdapter
 
-        viewModel.getArticles().observe(this, Observer {
-            rvAdapter.data = it!!
-            list.show()
-            errorView.hide()
+        viewModel.getArticles2().observe(this, Observer {
+            it?.let {
+                rvAdapter.data = it
+                list.show()
+                errorView.hide()
+            }
         })
     }
 
@@ -97,14 +115,23 @@ class ArticleListActivity : AppCompatActivity() {
         }
         R.id.jp -> {
             item.isChecked = !item.isChecked
+            viewModel.countryCode.value = "jp"
+            //viewModel.addCountry("jp")
+            pref.edit().putInt("int_key", 3)
             true
         }
         R.id.tw -> {
             item.isChecked = !item.isChecked
+            viewModel.countryCode.value = "tw"
+            //viewModel.addCountry("tw")
+            pref.edit().putInt("int_key", 2)
             true
         }
         R.id.us -> {
             item.isChecked = !item.isChecked
+            viewModel.countryCode.value = "us"
+            //viewModel.addCountry("us")
+            pref.edit().putInt("int_key", 1)
             true
         }
         else -> {

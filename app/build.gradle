@@ -4,6 +4,8 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+apply plugin: 'kotlin-kapt'
+
 android {
     compileSdkVersion 27
     defaultConfig {
@@ -41,4 +43,8 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp:${versions.okhttp}"
     implementation 'com.squareup.picasso:picasso:2.5.2'
 
+    implementation "com.google.dagger:dagger:${versions.daggerVersion}"
+    kapt "com.google.dagger:dagger-compiler:${versions.daggerVersion}"
+    provided 'org.glassfish:javax.annotation:10.0-b28'
+    kaptAndroidTest "com.google.dagger:dagger-compiler:${versions.daggerVersion}"
 }

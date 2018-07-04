@@ -12,10 +12,10 @@ class ArticlesRemoteData(private val service: ArticlesService) : Contract.Remote
 
     val params = hashMapOf("country" to "us")
 
-    override suspend fun fetchArticles(endpoint: String) {
+    override suspend fun fetchArticles(endpoint: String, country: String) {
         try {
             loading.postValue(true)
-            service.fetchArticles(endpoint, params)
+            service.fetchArticles(endpoint, hashMapOf("country" to country))
                     .let {
                         if (it.articles.isNotEmpty())
                             network.postValue(it)

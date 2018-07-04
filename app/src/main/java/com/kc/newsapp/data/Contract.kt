@@ -10,7 +10,7 @@ interface Contract {
         val fetched: LiveData<Articles>
         val error: LiveData<Boolean>
         val loading: LiveData<Boolean>
-        fun fetchArticles(forceUpdate: Boolean)
+        fun fetchArticles(forceUpdate: Boolean, country: String = "us"): Listing<Articles>
     }
 
     interface Local {
@@ -22,7 +22,7 @@ interface Contract {
         val network: LiveData<Articles>
         val error: LiveData<Boolean>
         val loading: LiveData<Boolean>
-        suspend fun fetchArticles(endpoint: String = Endpoint.URL)
+        suspend fun fetchArticles(endpoint: String = Endpoint.URL, country: String = "us")
     }
 
 }
