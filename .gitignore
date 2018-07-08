@@ -1,0 +1,8 @@
+app/app.iml
+.idea/
+app/build/
+build/
+captures/
+newsapp.iml
+local.properties
+.gradle/

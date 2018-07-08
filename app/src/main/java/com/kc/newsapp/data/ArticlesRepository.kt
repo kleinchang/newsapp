@@ -20,7 +20,7 @@ class ArticlesRepository(private val local: Contract.Local,
     override val error = remote.error
 
     override fun fetchArticles(forceUpdate: Boolean, country: String): Listing<Articles> {
-        log("fetchArticles $forceUpdate $country")
+        log("ArticlesRepository fetchArticles $forceUpdate $country")
         if (remote.network.value == null || forceUpdate || !TextUtils.isEmpty(country)) {
             launch(CommonPool) { remote.fetchArticles(country = country) }
         }

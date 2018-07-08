@@ -3,11 +3,12 @@ package com.kc.newsapp.ui
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
+import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.PopupMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -19,17 +20,28 @@ import com.kc.newsapp.viewmodel.ListViewModel
 import com.kc.newsapp.viewmodel.ListViewModelFactory
 import kotlinx.android.synthetic.main.activity_article_list.*
 import kotlinx.android.synthetic.main.activity_main.*
-import android.view.MenuInflater
 import com.kc.newsapp.*
+import com.kc.newsapp.data.model.Articles
+import com.kc.newsapp.data.remote.Endpoint
 import com.kc.newsapp.data.util.AppConfig
+import com.kc.newsapp.data.util.AppConfig.Companion.KEY_COUNTRIES
+import com.kc.newsapp.util.RxBus
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.runBlocking
 
 
 class ArticleListActivity : AppCompatActivity() {
 
+    val KEY_COUNTRIES = "country_list"
+
     private lateinit var rvAdapter: ArticlesAdapter
     private lateinit var viewModel: ListViewModel
-    val pref by lazy { getSharedPreferences("config", Context.MODE_PRIVATE) }
-    private val appConfig by lazy { AppConfig(this) }
+    private val pref by lazy { getSharedPreferences("config", Context.MODE_PRIVATE) }
+    private val appConfig by lazy { AppConfig(pref) }
+    var currentSet = setOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,25 +52,44 @@ class ArticleListActivity : AppCompatActivity() {
             initRecyclerView(it)
             initSwipeToRefresh(it)
             initErrorView(it)
-        }.apply { fetchArticles() }
+        }.apply {
+            fetchArticles()
+//            perfLiveData.value = setOf("cn")
+        }
 
 
-        var liveData = pref.intLiveData("int_key", 0) as SharedPreferenceIntLiveData
-//        if (liveData.value == null) liveData.updateValue(0)
-//        log("LiveData ${liveData.value}")
-//        liveData.value?.let {
-//            liveData.updateValue(it + 1)
-//        }
-        liveData.observe(this, Observer { value -> log("IntLiveData $value")})
-        pref.edit().putInt("int_key", 3).apply()
-        pref.edit().putInt("int_key", 4)
-        pref.edit().putInt("int_key", 5)
+//        var liveData = pref.intLiveData("int_key", 0) as SharedPreferenceIntLiveData
+//        liveData.observe(this, Observer { value -> log("IntLiveData $value")})
 
-        val curr = pref.getStringSet(AppConfig.KEY_COUNTRIES, mutableSetOf())
-        log("Curr size: ${curr.size} or ${appConfig.getCountryList()}")
-        pref.stringSetLiveData(AppConfig.KEY_COUNTRIES, curr).observe(this, Observer {
-            value -> log("StringSetLiveData $value")
+//        val curr = pref.getStringSet(AppConfig.KEY_COUNTRIES, mutableSetOf())
+//        log("Curr size: ${curr.size} or ${appConfig.getCountryList()}")
+//        pref.stringSetLiveData(KEY_COUNTRIES, mutableSetOf()).observe(this, Observer {
+        /*
+        viewModel.perfLiveData.observe(this, Observer {
+            value ->
+            log("StringSetLiveData $value")
+            value?.let {
+                currentSet = it
+                query(it)
+            }
         })
+        */
+//        viewModel.combinedList.observe(this, Observer {
+//            async {
+//                log("combinedList await")
+//                val articles = it!!.await()
+//                rvAdapter.data = articles
+//                log("combinedList ${articles.articles.size}")
+//            }
+//        })
+
+//        viewModel.options.observe(this, Observer {
+//            println("Kai options: ${it?.size}")
+//        })
+//
+//        RxBus.listen(String::class.java).subscribe({
+//            println("Kai: Im a String event $it")
+//        })
 
     }
 
@@ -75,11 +106,13 @@ class ArticleListActivity : AppCompatActivity() {
         }
         list.adapter = rvAdapter
 
-        viewModel.getArticles2().observe(this, Observer {
+        viewModel.getArticles().observe(this, Observer {
             it?.let {
-                rvAdapter.data = it
-                list.show()
-                errorView.hide()
+                launch (UI) {
+                    rvAdapter.data = it.await()
+                    list.show()
+                    errorView.hide()
+                }
             }
         })
     }
@@ -96,6 +129,7 @@ class ArticleListActivity : AppCompatActivity() {
 
     private fun initSwipeToRefresh(viewModel: ListViewModel) {
         viewModel.getLoading().observe(this, Observer {
+            log("getLoading $it")
             if (it != null) {
                 swipeRefresh.isRefreshing = it
                 if (it) {
@@ -104,7 +138,11 @@ class ArticleListActivity : AppCompatActivity() {
                 }
             }
         })
-        swipeRefresh.setOnRefreshListener { viewModel.fetchArticles(forceUpdate = true) }
+        swipeRefresh.setOnRefreshListener {
+//            viewModel.perfLiveData.value = currentSet
+
+//            query(currentSet)/*viewModel.fetchArticles(forceUpdate = true)*/
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -112,51 +150,105 @@ class ArticleListActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
+    fun openDialog() {
+
+        AlertDialog.Builder(this@ArticleListActivity).apply {
+
+            val array = resources.getStringArray(R.array.country)
+//            val array = arrayOf("us", "tw", "jp", "rs")
+            val set = mutableSetOf<String>()
+
+
+
+            setTitle(R.string.title).setMultiChoiceItems(array, null) {
+                dialog, which, isChecked ->
+                if (isChecked)
+                    set.add(array[which])
+                else
+                    set.remove(array[which])
+            }.setPositiveButton(R.string.ok) {
+                dialog, which ->
+                log("positive ${set.joinToString() }")
+                viewModel.perfLiveData.value = set
+                currentSet = set
+                currentSet.forEach { pref.updateCountry(it, true) }
+                //query(set)
+            }.setNegativeButton(R.string.cancel) {
+                dialog, which ->
+                log("negative $which")
+            }.create().show()
+        }
+
+    }
+
+    fun query(value: Set<String>) {
+        log("query ${value.joinToString() }}")
+        val service = ArticlesService()
+        val deferred = value?.map { c ->
+            async { service.fetchArticles(url = Endpoint.URL, country = c) }
+        }
+        async (CommonPool) {
+            log("async start")
+            deferred?.flatMap { it.await().articles }?.let {
+                rvAdapter.data = Articles(articles = it.sortedByDescending { it.publishedAt })
+                log("async Size: ${it.size}")
+                list.show()
+                errorView.hide()
+            }
+        }
+    }
+
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.action_settings -> {
+            openDialog()
             true
         }
         R.id.action_favorite -> {
+            openDialog()
             true
         }
         R.id.jp -> {
             item.isChecked = !item.isChecked
-            viewModel.countryCode.value = "jp"
+            //viewModel.countryCode.value = "jp"
             //viewModel.addCountry("jp", item.isChecked)
-            pref.edit().putInt("int_key", 3).apply()
-            appConfig.addRemoveCountry("jp", item.isChecked)
-            log("Country list: ${appConfig.getCountryList()}")
+            pref.updateCountry("jp", item.isChecked)
+            //viewModel.addOrRemoveCountry("jp", item.isChecked)
+            //log("Country list: ${appConfig.getCountryList()}")
+            RxBus.publish("jp")
             false
         }
         R.id.tw -> {
             item.isChecked = !item.isChecked
-            viewModel.countryCode.value = "tw"
+            //viewModel.countryCode.value = "tw"
             //viewModel.addCountry("tw")
-            pref.edit().putInt("int_key", 2).apply()
-            appConfig.addRemoveCountry("tw", item.isChecked)
-            log("Country list: ${appConfig.getCountryList()}")
-            false
+            pref.updateCountry("tw", item.isChecked)
+            //viewModel.addOrRemoveCountry("tw", item.isChecked)
+            //log("Country list: ${appConfig.getCountryList()}")
+            RxBus.publish("tw")
+            true
         }
         R.id.us -> {
             item.isChecked = !item.isChecked
-            viewModel.countryCode.value = "us"
+            //viewModel.countryCode.value = "us"
             //viewModel.addCountry("us")
-            pref.edit().putInt("int_key", 1).apply()
-            appConfig.addRemoveCountry("us", item.isChecked)
-            log("Country list: ${appConfig.getCountryList()}")
+            pref.updateCountry("us", item.isChecked)
+            //viewModel.addOrRemoveCountry("us", item.isChecked)
+            RxBus.publish("us")
             false
         }
         else -> {
             super.onOptionsItemSelected(item)
         }
     }
+}
 
-    fun showPopup(v: View) {
-        val popup = PopupMenu(this, v)
-        val inflater = popup.getMenuInflater()
-        inflater.inflate(R.menu.actions, popup.menu)
-        popup.show()
-    }
+fun SharedPreferences.updateCountry(country: String, toAddOrRemove: Boolean) {
+    val current = getStringSet(KEY_COUNTRIES, setOf()).toMutableSet()
+    if (toAddOrRemove)
+        current.add(country)
+    else
+        current.remove(country)
+    edit().putStringSet(KEY_COUNTRIES, current).apply()
 }
 
 

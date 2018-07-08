@@ -3,9 +3,9 @@ package com.kc.newsapp.data.util
 import android.content.Context
 import android.content.SharedPreferences
 
-class AppConfig(context: Context) {
+class AppConfig(private val pref: SharedPreferences) {
 
-    private val pref = context.getSharedPreferences("config", Context.MODE_PRIVATE)
+//    private val pref = context.getSharedPreferences("config", Context.MODE_PRIVATE)
 //    private val KEY_COUNTRIES = "country_list"
 
     companion object {
@@ -31,7 +31,7 @@ class AppConfig(context: Context) {
     }
 
     private fun updateCountryList(countries: Set<String>) {
-        pref.edit().remove(KEY_COUNTRIES).putStringSet(KEY_COUNTRIES, countries).commit()
+        pref.edit().remove(KEY_COUNTRIES).putStringSet(KEY_COUNTRIES, countries).apply()
     }
 
 }

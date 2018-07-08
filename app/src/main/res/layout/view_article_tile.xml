@@ -16,21 +16,33 @@
 
     <TextView
         android:id="@+id/source"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/holo_red_dark"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:paddingBottom="2dp"
+        android:textColor="@android:color/white" />
 
     <TextView
         android:id="@+id/title"
+        android:layout_marginTop="2dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/description"
+        android:layout_marginTop="5dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textStyle="italic" />
 
     <TextView
         android:id="@+id/published_at"
+        android:layout_marginTop="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
