@@ -5,10 +5,13 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.ProgressBar
 import com.kc.newsapp.R
 import com.kc.newsapp.data.model.Article
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.util.Util
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.view_article_tile.view.*
 import java.text.SimpleDateFormat
@@ -35,8 +38,7 @@ class ArticlesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             published_at.text = Util.formatTimestamp(articleList[position].publishedAt,
                     SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
                     TimeZone.getTimeZone("Australia/Sydney"))
-            if (!TextUtils.isEmpty(articleList[position].urlToImage))
-                Picasso.with(image.context).load(articleList[position].urlToImage).into(image)
+            image.load(articleList[position].urlToImage, progress)
         }
     }
 
@@ -53,3 +55,22 @@ class ArticlesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 }
 
 fun log(msg: String) = println("Kai: [${Thread.currentThread().name}] $msg")
+
+fun ImageView.load(url: String?, progressBar: ProgressBar? = null) {
+    if (!TextUtils.isEmpty(url)) {
+        progressBar?.show()
+        log("Load $url")
+        Picasso.with(context).load(url).into(this, object : Callback {
+            override fun onSuccess() {
+                progressBar?.hide()
+                log("Load $url done")
+            }
+            override fun onError() {
+                progressBar?.hide()
+                log("Load $url fail")
+            }
+        })
+    } else {
+        progressBar?.hide()
+    }
+}
