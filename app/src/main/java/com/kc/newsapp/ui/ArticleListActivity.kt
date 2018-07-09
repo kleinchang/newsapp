@@ -25,12 +25,10 @@ import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.data.remote.Endpoint
 import com.kc.newsapp.data.util.AppConfig
 import com.kc.newsapp.data.util.AppConfig.Companion.KEY_COUNTRIES
-import com.kc.newsapp.util.RxBus
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.runBlocking
 
 
 class ArticleListActivity : AppCompatActivity() {
@@ -41,7 +39,7 @@ class ArticleListActivity : AppCompatActivity() {
     private lateinit var viewModel: ListViewModel
     private val pref by lazy { getSharedPreferences("config", Context.MODE_PRIVATE) }
     private val appConfig by lazy { AppConfig(pref) }
-    var currentSet = setOf<String>()
+//    var currentSet = setOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,43 +52,7 @@ class ArticleListActivity : AppCompatActivity() {
             initErrorView(it)
         }.apply {
             fetchArticles()
-//            perfLiveData.value = setOf("cn")
         }
-
-
-//        var liveData = pref.intLiveData("int_key", 0) as SharedPreferenceIntLiveData
-//        liveData.observe(this, Observer { value -> log("IntLiveData $value")})
-
-//        val curr = pref.getStringSet(AppConfig.KEY_COUNTRIES, mutableSetOf())
-//        log("Curr size: ${curr.size} or ${appConfig.getCountryList()}")
-//        pref.stringSetLiveData(KEY_COUNTRIES, mutableSetOf()).observe(this, Observer {
-        /*
-        viewModel.perfLiveData.observe(this, Observer {
-            value ->
-            log("StringSetLiveData $value")
-            value?.let {
-                currentSet = it
-                query(it)
-            }
-        })
-        */
-//        viewModel.combinedList.observe(this, Observer {
-//            async {
-//                log("combinedList await")
-//                val articles = it!!.await()
-//                rvAdapter.data = articles
-//                log("combinedList ${articles.articles.size}")
-//            }
-//        })
-
-//        viewModel.options.observe(this, Observer {
-//            println("Kai options: ${it?.size}")
-//        })
-//
-//        RxBus.listen(String::class.java).subscribe({
-//            println("Kai: Im a String event $it")
-//        })
-
     }
 
     private fun getViewModel(): ListViewModel {
@@ -139,9 +101,7 @@ class ArticleListActivity : AppCompatActivity() {
             }
         })
         swipeRefresh.setOnRefreshListener {
-//            viewModel.perfLiveData.value = currentSet
-
-//            query(currentSet)/*viewModel.fetchArticles(forceUpdate = true)*/
+            viewModel.fetchArticles(forceUpdate = true)
         }
     }
 
@@ -155,10 +115,7 @@ class ArticleListActivity : AppCompatActivity() {
         AlertDialog.Builder(this@ArticleListActivity).apply {
 
             val array = resources.getStringArray(R.array.country)
-//            val array = arrayOf("us", "tw", "jp", "rs")
             val set = mutableSetOf<String>()
-
-
 
             setTitle(R.string.title).setMultiChoiceItems(array, null) {
                 dialog, which, isChecked ->
@@ -169,10 +126,7 @@ class ArticleListActivity : AppCompatActivity() {
             }.setPositiveButton(R.string.ok) {
                 dialog, which ->
                 log("positive ${set.joinToString() }")
-                viewModel.perfLiveData.value = set
-                currentSet = set
-                currentSet.forEach { pref.updateCountry(it, true) }
-                //query(set)
+                pref.updateCountries(set)
             }.setNegativeButton(R.string.cancel) {
                 dialog, which ->
                 log("negative $which")
@@ -207,48 +161,38 @@ class ArticleListActivity : AppCompatActivity() {
             openDialog()
             true
         }
-        R.id.jp -> {
-            item.isChecked = !item.isChecked
-            //viewModel.countryCode.value = "jp"
-            //viewModel.addCountry("jp", item.isChecked)
-            pref.updateCountry("jp", item.isChecked)
-            //viewModel.addOrRemoveCountry("jp", item.isChecked)
-            //log("Country list: ${appConfig.getCountryList()}")
-            RxBus.publish("jp")
-            false
-        }
-        R.id.tw -> {
-            item.isChecked = !item.isChecked
-            //viewModel.countryCode.value = "tw"
-            //viewModel.addCountry("tw")
-            pref.updateCountry("tw", item.isChecked)
-            //viewModel.addOrRemoveCountry("tw", item.isChecked)
-            //log("Country list: ${appConfig.getCountryList()}")
-            RxBus.publish("tw")
-            true
-        }
-        R.id.us -> {
-            item.isChecked = !item.isChecked
-            //viewModel.countryCode.value = "us"
-            //viewModel.addCountry("us")
-            pref.updateCountry("us", item.isChecked)
-            //viewModel.addOrRemoveCountry("us", item.isChecked)
-            RxBus.publish("us")
-            false
-        }
+//        R.id.jp -> {
+//            item.isChecked = !item.isChecked
+//            pref.updateCountry("jp", item.isChecked)
+//            false
+//        }
+//        R.id.tw -> {
+//            item.isChecked = !item.isChecked
+//            pref.updateCountry("tw", item.isChecked)
+//            true
+//        }
+//        R.id.us -> {
+//            item.isChecked = !item.isChecked
+//            pref.updateCountry("us", item.isChecked)
+//            false
+//        }
         else -> {
             super.onOptionsItemSelected(item)
         }
     }
 }
 
-fun SharedPreferences.updateCountry(country: String, toAddOrRemove: Boolean) {
-    val current = getStringSet(KEY_COUNTRIES, setOf()).toMutableSet()
-    if (toAddOrRemove)
-        current.add(country)
-    else
-        current.remove(country)
-    edit().putStringSet(KEY_COUNTRIES, current).apply()
+//fun SharedPreferences.updateCountry(country: String, toAddOrRemove: Boolean) {
+//    val current = getStringSet(KEY_COUNTRIES, setOf()).toMutableSet()
+//    if (toAddOrRemove)
+//        current.add(country)
+//    else
+//        current.remove(country)
+//    edit().putStringSet(KEY_COUNTRIES, current).apply()
+//}
+
+fun SharedPreferences.updateCountries(countries: Set<String>) {
+    edit().putStringSet(KEY_COUNTRIES, countries).apply()
 }
 
 

@@ -11,8 +11,6 @@ class ArticlesRemoteData(private val service: ArticlesService) : Contract.Remote
     override val loading = MutableLiveData<Boolean>()
     override val error = MutableLiveData<Boolean>()
 
-    //val params = hashMapOf("country" to "us")
-
     override suspend fun fetchArticles(endpoint: String, country: String) {
         log("ArticlesRemoteData fetchArticles $country")
         try {

@@ -11,7 +11,7 @@
 
     <!-- Settings, should always be in the overflow -->
     <item android:id="@+id/action_settings"
-        android:title="Settings"
+        android:title="Country of Interest"
         app:showAsAction="never"/>
 
     <group android:checkableBehavior="all">
