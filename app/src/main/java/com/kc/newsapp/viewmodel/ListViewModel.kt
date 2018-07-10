@@ -24,7 +24,7 @@ class ListViewModel(context: Context, private val repo: Contract.Repository) : V
 
     // TODO: Inject Application Dagger
     private val sharedPreferenceLiveData = context.getSharedPreferences("config", MODE_PRIVATE).stringSetLiveData(KEY_COUNTRIES, mutableSetOf())
-    private val countryOfInterest = MediatorLiveData<Set<String>>().apply {
+    val countryOfInterest = MediatorLiveData<Set<String>>().apply {
         addSource(sharedPreferenceLiveData) {
             if (value != it) {
                 log("$value != $it")
@@ -34,6 +34,9 @@ class ListViewModel(context: Context, private val repo: Contract.Repository) : V
             }
         }
     }
+    val indexChecked = map(countryOfInterest, {
+
+    })
 
     private val _combinedList = map(countryOfInterest, {
         _loading.postValue(true)

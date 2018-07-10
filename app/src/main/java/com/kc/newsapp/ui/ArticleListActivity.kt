@@ -110,14 +110,16 @@ class ArticleListActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    fun openDialog() {
+    private fun openDialog(viewModel: ListViewModel) {
 
         AlertDialog.Builder(this@ArticleListActivity).apply {
 
             val array = resources.getStringArray(R.array.country)
+            val checked = BooleanArray(array.size, { i -> viewModel.countryOfInterest.value?.contains(array[i]) ?: false })
             val set = mutableSetOf<String>()
+//            val set = viewModel.countryOfInterest.value as MutableSet<String>
 
-            setTitle(R.string.title).setMultiChoiceItems(array, null) {
+            setTitle(R.string.title).setMultiChoiceItems(array, checked) {
                 dialog, which, isChecked ->
                 if (isChecked)
                     set.add(array[which])
@@ -154,11 +156,11 @@ class ArticleListActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.action_settings -> {
-            openDialog()
+            openDialog(viewModel)
             true
         }
         R.id.action_favorite -> {
-            openDialog()
+            openDialog(viewModel)
             true
         }
 //        R.id.jp -> {
@@ -192,7 +194,7 @@ class ArticleListActivity : AppCompatActivity() {
 //}
 
 fun SharedPreferences.updateCountries(countries: Set<String>) {
-    edit().putStringSet(KEY_COUNTRIES, countries).apply()
+    edit().remove(KEY_COUNTRIES).putStringSet(KEY_COUNTRIES, countries).apply()
 }
 
 
