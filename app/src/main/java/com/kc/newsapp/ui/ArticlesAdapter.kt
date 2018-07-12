@@ -38,6 +38,7 @@ class ArticlesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             published_at.text = Util.formatTimestamp(articleList[position].publishedAt,
                     SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
                     TimeZone.getTimeZone("Australia/Sydney"))
+            log("${articleList[position].title} load ${articleList[position].urlToImage}")
             image.load(articleList[position].urlToImage, progress)
         }
     }
@@ -58,19 +59,17 @@ fun log(msg: String) = println("Kai: [${Thread.currentThread().name}] $msg")
 
 fun ImageView.load(url: String?, progressBar: ProgressBar? = null) {
     if (!TextUtils.isEmpty(url)) {
+        show()
         progressBar?.show()
-        log("Load $url")
         Picasso.with(context).load(url).into(this, object : Callback {
             override fun onSuccess() {
                 progressBar?.hide()
-                log("Load $url done")
             }
             override fun onError() {
                 progressBar?.hide()
-                log("Load $url fail")
             }
         })
     } else {
-        progressBar?.hide()
+        hide()
     }
 }

@@ -117,7 +117,7 @@ class ArticleListActivity : AppCompatActivity() {
             val array = resources.getStringArray(R.array.country)
             val checked = BooleanArray(array.size, { i -> viewModel.countryOfInterest.value?.contains(array[i]) ?: false })
             val set = mutableSetOf<String>()
-//            val set = viewModel.countryOfInterest.value as MutableSet<String>
+            viewModel.countryOfInterest.value?.forEach { set.add(it) }
 
             setTitle(R.string.title).setMultiChoiceItems(array, checked) {
                 dialog, which, isChecked ->
