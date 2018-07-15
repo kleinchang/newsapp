@@ -4,4 +4,9 @@
     <string name="title">Country of Interest</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
+
+    <string name="text_favorites">Favorites</string>
+    <string name="text_schedules">Live</string>
+    <string name="text_music">Music</string>
+
 </resources>
