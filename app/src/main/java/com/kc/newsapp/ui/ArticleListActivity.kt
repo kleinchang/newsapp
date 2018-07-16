@@ -68,13 +68,18 @@ class ArticleListActivity : AppCompatActivity() {
         }
         list.adapter = rvAdapter
 
-        viewModel.getArticles().observe(this, Observer {
+        viewModel.getCombinedList().observe(this, Observer {
             it?.let {
                 launch (UI) {
-                    rvAdapter.data = it.await()
-                    list.show()
-                    errorView.hide()
+                    viewModel.articles.value = it.await()
                 }
+            }
+        })
+        viewModel.articles.observe(this, Observer {
+            it?.let {
+                rvAdapter.data = it
+                list.show()
+                errorView.hide()
             }
         })
     }

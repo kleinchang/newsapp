@@ -34,9 +34,6 @@ class ListViewModel(context: Context, private val repo: Contract.Repository) : V
             }
         }
     }
-    val indexChecked = map(countryOfInterest, {
-
-    })
 
     private val _combinedList = map(countryOfInterest, {
         _loading.postValue(true)
@@ -52,7 +49,8 @@ class ListViewModel(context: Context, private val repo: Contract.Repository) : V
     private val _loading: MutableLiveData<Boolean> = repo.loading
     private val _error: LiveData<Boolean> = repo.error
 
-    fun getArticles() = _combinedList
+    fun getCombinedList() = _combinedList
+    val articles = MutableLiveData<Articles>()
     fun getLoading() = _loading
     fun getError() = _error
 
