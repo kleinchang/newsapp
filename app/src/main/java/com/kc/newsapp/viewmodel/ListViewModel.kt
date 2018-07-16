@@ -19,18 +19,33 @@ import kotlinx.coroutines.experimental.async
 
 class ListViewModel(context: Context, private val repo: Contract.Repository) : ViewModel() {
 
-    val KEY_COUNTRIES = "country_list"
+    companion object {
+        val KEY_COUNTRIES = "country_list"
+        val KEY_BOOKMARKS = "article_list"
+    }
     private val service by lazy { ArticlesService() }
+
+    private val bookmarkSharedPref = context.getSharedPreferences("config", MODE_PRIVATE).stringSetLiveData(KEY_BOOKMARKS, mutableSetOf())
+    val bookmarks = MediatorLiveData<Set<String>>().apply {
+        addSource(bookmarkSharedPref) {
+            if (value != it) {
+                log("Bookmarks: $value != $it")
+                value = it
+            } else {
+                log("Bookmarks: $value == $it")
+            }
+        }
+    }
 
     // TODO: Inject Application Dagger
     private val sharedPreferenceLiveData = context.getSharedPreferences("config", MODE_PRIVATE).stringSetLiveData(KEY_COUNTRIES, mutableSetOf())
     val countryOfInterest = MediatorLiveData<Set<String>>().apply {
         addSource(sharedPreferenceLiveData) {
             if (value != it) {
-                log("$value != $it")
+                log("CountryOfInterest: $value != $it")
                 value = it
             } else {
-                log("$value == $it")
+                log("CountryOfInterest: $value == $it")
             }
         }
     }

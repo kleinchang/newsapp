@@ -27,10 +27,11 @@ class ArticlesService {
 
         val request = Request.Builder().url(httpBuilder.build()).build()
         val data = arrayOfNulls<Any>(1)
-        log("ArticlesService fetchArticles before")
+        log("ArticlesService fetchArticles $country")
+        // TODO: https://stackoverflow.com/questions/30538640/javax-net-ssl-sslexception-read-error-ssl-0x9524b800-i-o-error-during-system
         val res = client.newCall(request).execute()
         if (res.isSuccessful) {
-            log("ArticlesService fetchArticles successful")
+            log("ArticlesService fetchArticles $country successful")
             val response = res.body()?.string()
             val content: Articles = Gson().fromJson(response, Articles::class.java)
             data[0] = content

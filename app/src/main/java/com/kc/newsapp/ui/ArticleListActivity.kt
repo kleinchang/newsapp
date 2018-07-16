@@ -24,7 +24,8 @@ import com.kc.newsapp.*
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.data.remote.Endpoint
 import com.kc.newsapp.data.util.AppConfig
-import com.kc.newsapp.data.util.AppConfig.Companion.KEY_COUNTRIES
+import com.kc.newsapp.viewmodel.ListViewModel.Companion.KEY_BOOKMARKS
+import com.kc.newsapp.viewmodel.ListViewModel.Companion.KEY_COUNTRIES
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
@@ -33,13 +34,11 @@ import kotlinx.coroutines.experimental.launch
 
 class ArticleListActivity : AppCompatActivity() {
 
-    val KEY_COUNTRIES = "country_list"
-
     private lateinit var rvAdapter: ArticlesAdapter
     private lateinit var viewModel: ListViewModel
     private val pref by lazy { getSharedPreferences("config", Context.MODE_PRIVATE) }
     private val appConfig by lazy { AppConfig(pref) }
-//    var currentSet = setOf<String>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +60,11 @@ class ArticleListActivity : AppCompatActivity() {
     }
 
     private fun initRecyclerView(viewModel: ListViewModel) {
-        rvAdapter = ArticlesAdapter()
+        rvAdapter = ArticlesAdapter(viewModel.bookmarks) {
+            position, title ->
+            pref.updateBookmarks(title)
+            rvAdapter.notifyItemChanged(position)
+        }
         LinearLayoutManager(this@ArticleListActivity).let {
             list.layoutManager = it
             list.addItemDecoration(DividerItemDecoration(list.context, it.orientation))
@@ -132,11 +135,13 @@ class ArticleListActivity : AppCompatActivity() {
                     set.remove(array[which])
             }.setPositiveButton(R.string.ok) {
                 dialog, which ->
-                log("positive ${set.joinToString() }")
-                pref.updateCountries(set)
+                log("OK ${set.joinToString() }")
+                pref.updateStringSet(set, KEY_BOOKMARKS)
+                //pref.updateCountries(set)
+                //pref.updateStringSet(set, KEY_COUNTRIES)
             }.setNegativeButton(R.string.cancel) {
                 dialog, which ->
-                log("negative $which")
+                log("Cancel $which")
             }.create().show()
         }
 
@@ -199,8 +204,27 @@ class ArticleListActivity : AppCompatActivity() {
 //}
 
 fun SharedPreferences.updateCountries(countries: Set<String>) {
-    edit().remove(KEY_COUNTRIES).putStringSet(KEY_COUNTRIES, countries).apply()
+    updateStringSet(countries, KEY_COUNTRIES)
 }
+
+fun SharedPreferences.updateBookmarks(title: String) {
+    val originalSet = getStringSet(KEY_BOOKMARKS, mutableSetOf())
+    val currentSet = mutableSetOf<String>()
+    originalSet.forEach { currentSet.add(it) }
+    if (currentSet.contains(title)) {
+        currentSet.remove(title)
+        log("remove $title from ${currentSet.size}")
+    } else {
+        currentSet.add(title)
+        log("add $title into ${currentSet.size}")
+    }
+    updateStringSet(currentSet, KEY_BOOKMARKS)
+}
+
+fun SharedPreferences.updateStringSet(countries: Set<String>, key: String) {
+    edit().putStringSet(key, countries).commit()
+}
+
 
 
 fun View.show() = show(true)

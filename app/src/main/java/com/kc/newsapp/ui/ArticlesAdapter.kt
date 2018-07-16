@@ -1,5 +1,6 @@
 package com.kc.newsapp.ui
 
+import android.arch.lifecycle.LiveData
 import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -17,7 +18,8 @@ import kotlinx.android.synthetic.main.view_article_tile.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ArticlesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ArticlesAdapter(private val bookmarksLiveData: LiveData<Set<String>>,
+                      private val toggle: (Int, String) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var articleList: List<Article> = emptyList()
     var data: Articles = Articles()
@@ -38,8 +40,11 @@ class ArticlesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             published_at.text = Util.formatTimestamp(articleList[position].publishedAt,
                     SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
                     TimeZone.getTimeZone("Australia/Sydney"))
-            log("${articleList[position].title} load ${articleList[position].urlToImage}")
+            //log("${articleList[position].title} load ${articleList[position].urlToImage}")
             image.load(articleList[position].urlToImage, progress)
+            bookmark.setImageResource(if (bookmarksLiveData.value?.contains(articleList[position].title) == true)
+                R.drawable.bookmarked else R.drawable.unbookmarked )
+            bookmark.setOnClickListener { toggle(position, articleList[position].title) }
         }
     }
 
