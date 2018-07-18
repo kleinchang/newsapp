@@ -12,6 +12,8 @@ import com.kc.newsapp.R
 import com.kc.newsapp.data.model.Article
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.util.Util
+import com.kc.newsapp.util.hide
+import com.kc.newsapp.util.show
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.view_article_tile.view.*

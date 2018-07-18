@@ -22,10 +22,12 @@ class ListViewModel(context: Context, private val repo: Contract.Repository) : V
     companion object {
         val KEY_COUNTRIES = "country_list"
         val KEY_BOOKMARKS = "article_list"
+        val KEY_BOOKMARKS_JSON = "article_list_json"
     }
     private val service by lazy { ArticlesService() }
+    val sharedPreferences by lazy { context.getSharedPreferences("config", MODE_PRIVATE) }
 
-    private val bookmarkSharedPref = context.getSharedPreferences("config", MODE_PRIVATE).stringSetLiveData(KEY_BOOKMARKS, mutableSetOf())
+    val bookmarkSharedPref = sharedPreferences.stringSetLiveData(KEY_BOOKMARKS, mutableSetOf())
     val bookmarks = MediatorLiveData<Set<String>>().apply {
         addSource(bookmarkSharedPref) {
             if (value != it) {
@@ -38,7 +40,7 @@ class ListViewModel(context: Context, private val repo: Contract.Repository) : V
     }
 
     // TODO: Inject Application Dagger
-    private val sharedPreferenceLiveData = context.getSharedPreferences("config", MODE_PRIVATE).stringSetLiveData(KEY_COUNTRIES, mutableSetOf())
+    private val sharedPreferenceLiveData = sharedPreferences.stringSetLiveData(KEY_COUNTRIES, mutableSetOf())
     val countryOfInterest = MediatorLiveData<Set<String>>().apply {
         addSource(sharedPreferenceLiveData) {
             if (value != it) {

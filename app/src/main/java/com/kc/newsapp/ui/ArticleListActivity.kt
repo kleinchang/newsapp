@@ -2,8 +2,6 @@ package com.kc.newsapp.ui
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Context
-import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
@@ -11,7 +9,6 @@ import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import com.kc.newsapp.data.ArticlesRepository
 import com.kc.newsapp.data.local.ArticlesLocalData
 import com.kc.newsapp.data.remote.ArticlesRemoteData
@@ -23,9 +20,10 @@ import kotlinx.android.synthetic.main.activity_main.*
 import com.kc.newsapp.*
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.data.remote.Endpoint
-import com.kc.newsapp.data.util.AppConfig
-import com.kc.newsapp.viewmodel.ListViewModel.Companion.KEY_BOOKMARKS
-import com.kc.newsapp.viewmodel.ListViewModel.Companion.KEY_COUNTRIES
+import com.kc.newsapp.util.hide
+import com.kc.newsapp.util.show
+import com.kc.newsapp.util.updateBookmarkKeys
+import com.kc.newsapp.util.updateCountries
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
@@ -36,8 +34,6 @@ class ArticleListActivity : AppCompatActivity() {
 
     private lateinit var rvAdapter: ArticlesAdapter
     private lateinit var viewModel: ListViewModel
-    private val pref by lazy { getSharedPreferences("config", Context.MODE_PRIVATE) }
-    private val appConfig by lazy { AppConfig(pref) }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,6 +48,10 @@ class ArticleListActivity : AppCompatActivity() {
         }.apply {
             fetchArticles()
         }
+
+        viewModel.bookmarks.observe(this, Observer {
+            log("liveData in ViewModel bookmarks $it")
+        })
     }
 
     private fun getViewModel(): ListViewModel {
@@ -62,7 +62,7 @@ class ArticleListActivity : AppCompatActivity() {
     private fun initRecyclerView(viewModel: ListViewModel) {
         rvAdapter = ArticlesAdapter(viewModel.bookmarks) {
             position, title ->
-            pref.updateBookmarks(title)
+            viewModel.sharedPreferences.updateBookmarkKeys(title)
             rvAdapter.notifyItemChanged(position)
         }
         LinearLayoutManager(this@ArticleListActivity).let {
@@ -136,9 +136,8 @@ class ArticleListActivity : AppCompatActivity() {
             }.setPositiveButton(R.string.ok) {
                 dialog, which ->
                 log("OK ${set.joinToString() }")
-                pref.updateStringSet(set, KEY_BOOKMARKS)
-                //pref.updateCountries(set)
-                //pref.updateStringSet(set, KEY_COUNTRIES)
+                viewModel.sharedPreferences.updateCountries(set)
+                //viewModel.sharedPreferences.updateStringSet(set, KEY_BOOKMARKS)
             }.setNegativeButton(R.string.cancel) {
                 dialog, which ->
                 log("Cancel $which")
@@ -194,41 +193,4 @@ class ArticleListActivity : AppCompatActivity() {
     }
 }
 
-//fun SharedPreferences.updateCountry(country: String, toAddOrRemove: Boolean) {
-//    val current = getStringSet(KEY_COUNTRIES, setOf()).toMutableSet()
-//    if (toAddOrRemove)
-//        current.add(country)
-//    else
-//        current.remove(country)
-//    edit().putStringSet(KEY_COUNTRIES, current).apply()
-//}
-
-fun SharedPreferences.updateCountries(countries: Set<String>) {
-    updateStringSet(countries, KEY_COUNTRIES)
-}
-
-fun SharedPreferences.updateBookmarks(title: String) {
-    val originalSet = getStringSet(KEY_BOOKMARKS, mutableSetOf())
-    val currentSet = mutableSetOf<String>()
-    originalSet.forEach { currentSet.add(it) }
-    if (currentSet.contains(title)) {
-        currentSet.remove(title)
-        log("remove $title from ${currentSet.size}")
-    } else {
-        currentSet.add(title)
-        log("add $title into ${currentSet.size}")
-    }
-    updateStringSet(currentSet, KEY_BOOKMARKS)
-}
-
-fun SharedPreferences.updateStringSet(countries: Set<String>, key: String) {
-    edit().putStringSet(key, countries).commit()
-}
-
-
-
-fun View.show() = show(true)
-fun View.hide() = show(false)
-fun View.show(show: Boolean) {
-    visibility = if (show) View.VISIBLE else View.GONE
-}
+// TODO: put 2 panel for each bottomnav
