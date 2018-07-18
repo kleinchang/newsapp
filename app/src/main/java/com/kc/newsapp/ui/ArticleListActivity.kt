@@ -35,12 +35,33 @@ class ArticleListActivity : AppCompatActivity() {
     private lateinit var rvAdapter: ArticlesAdapter
     private lateinit var viewModel: ListViewModel
 
+    val TAG_LIVE = "LIVE"
+    val TAG_FAVORITE = "FAVORITE"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        addFragment(TAG_LIVE)
+        bottom_navigation.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.action_favorites -> {
+                    addFragment(TAG_FAVORITE)
+                    true
+                }
+                R.id.action_live_news -> {
+                    addFragment(TAG_LIVE)
+                    true
+                }
+                else -> {
+                    true
+                }
+            }
+        }
+
+        /*
         viewModel = getViewModel().also {
             initRecyclerView(it)
             initSwipeToRefresh(it)
@@ -52,6 +73,18 @@ class ArticleListActivity : AppCompatActivity() {
         viewModel.bookmarks.observe(this, Observer {
             log("liveData in ViewModel bookmarks $it")
         })
+        */
+    }
+
+    private fun addFragment(tag: String) {
+        val fragment = supportFragmentManager.findFragmentByTag(tag)
+        if (fragment == null) {
+            supportFragmentManager.beginTransaction().replace(R.id.content, ArticleListFragment(), tag)
+                    .addToBackStack(null).commit()
+        } else {
+            supportFragmentManager.beginTransaction().replace(R.id.content, fragment, tag)
+                    .addToBackStack(null).commit()
+        }
     }
 
     private fun getViewModel(): ListViewModel {

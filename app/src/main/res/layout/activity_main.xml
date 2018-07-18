@@ -19,7 +19,12 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/activity_article_list" />
+    <!--<include layout="@layout/activity_article_list" />-->
+    <FrameLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/bottom_navigation"
