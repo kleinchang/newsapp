@@ -35,24 +35,31 @@ class ArticleListActivity : AppCompatActivity() {
     private lateinit var rvAdapter: ArticlesAdapter
     private lateinit var viewModel: ListViewModel
 
-    val TAG_LIVE = "LIVE"
-    val TAG_FAVORITE = "FAVORITE"
+    companion object {
+        const val CURRENT_TAB = "tab"
+    }
 
+    private var currentTab = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        addFragment(TAG_LIVE)
+        currentTab = savedInstanceState?.getBoolean(CURRENT_TAB, true) ?: true
+        if (currentTab)
+            addFragment(ArticleListFragment.TAG)
+        else
+            addFragment(BookmarkFragment.TAG)
+
         bottom_navigation.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.action_favorites -> {
-                    addFragment(TAG_FAVORITE)
+                    currentTab = addFragment(BookmarkFragment.TAG)
                     true
                 }
                 R.id.action_live_news -> {
-                    addFragment(TAG_LIVE)
+                    currentTab = addFragment(ArticleListFragment.TAG)
                     true
                 }
                 else -> {
@@ -60,6 +67,8 @@ class ArticleListActivity : AppCompatActivity() {
                 }
             }
         }
+
+        viewModel = getViewModel()
 
         /*
         viewModel = getViewModel().also {
@@ -76,15 +85,22 @@ class ArticleListActivity : AppCompatActivity() {
         */
     }
 
-    private fun addFragment(tag: String) {
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        outState?.putBoolean(CURRENT_TAB, currentTab)
+    }
+
+    private fun addFragment(tag: String): Boolean {
         val fragment = supportFragmentManager.findFragmentByTag(tag)
         if (fragment == null) {
-            supportFragmentManager.beginTransaction().replace(R.id.content, ArticleListFragment(), tag)
+            supportFragmentManager.beginTransaction().
+                    replace(R.id.content, if (tag == ArticleListFragment.TAG) ArticleListFragment() else BookmarkFragment(), tag)
                     .addToBackStack(null).commit()
         } else {
             supportFragmentManager.beginTransaction().replace(R.id.content, fragment, tag)
                     .addToBackStack(null).commit()
         }
+        return tag == ArticleListFragment.TAG
     }
 
     private fun getViewModel(): ListViewModel {
@@ -92,10 +108,11 @@ class ArticleListActivity : AppCompatActivity() {
         return ViewModelProviders.of(this, ListViewModelFactory(applicationContext, repo))[ListViewModel::class.java]
     }
 
+    /*
     private fun initRecyclerView(viewModel: ListViewModel) {
-        rvAdapter = ArticlesAdapter(viewModel.bookmarks) {
-            position, title ->
-            viewModel.sharedPreferences.updateBookmarkKeys(title)
+        rvAdapter = ArticlesAdapter(viewModel.bookmarks, viewModel.bookmarkJson) {
+            position, article ->
+            viewModel.sharedPreferences.updateBookmarkKeys(article.title)
             rvAdapter.notifyItemChanged(position)
         }
         LinearLayoutManager(this@ArticleListActivity).let {
@@ -145,6 +162,7 @@ class ArticleListActivity : AppCompatActivity() {
             viewModel.fetchArticles(forceUpdate = true)
         }
     }
+    */
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.actions, menu)
@@ -225,5 +243,3 @@ class ArticleListActivity : AppCompatActivity() {
         }
     }
 }
-
-// TODO: put 2 panel for each bottomnav

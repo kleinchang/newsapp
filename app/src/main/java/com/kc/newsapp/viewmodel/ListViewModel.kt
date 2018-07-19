@@ -7,11 +7,15 @@ import android.arch.lifecycle.Transformations.map
 import android.arch.lifecycle.ViewModel
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.kc.newsapp.data.Contract
+import com.kc.newsapp.data.model.Article
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.data.remote.ArticlesService
 import com.kc.newsapp.data.remote.Endpoint
 import com.kc.newsapp.ui.log
+import com.kc.newsapp.util.stringLiveData
 import com.kc.newsapp.util.stringSetLiveData
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
@@ -24,6 +28,7 @@ class ListViewModel(context: Context, private val repo: Contract.Repository) : V
         val KEY_BOOKMARKS = "article_list"
         val KEY_BOOKMARKS_JSON = "article_list_json"
     }
+    private val gson by lazy { Gson() }
     private val service by lazy { ArticlesService() }
     val sharedPreferences by lazy { context.getSharedPreferences("config", MODE_PRIVATE) }
 
@@ -38,6 +43,12 @@ class ListViewModel(context: Context, private val repo: Contract.Repository) : V
             }
         }
     }
+
+    private val bookmarkJson = sharedPreferences.stringLiveData(KEY_BOOKMARKS_JSON, "[]")
+    val bookmarkArticleList: LiveData<List<Article>> = map(bookmarkJson, {
+        val type = object: TypeToken<List<Article>>() {}.type
+        gson.fromJson<List<Article>>(it, type)
+    })
 
     // TODO: Inject Application Dagger
     private val sharedPreferenceLiveData = sharedPreferences.stringSetLiveData(KEY_COUNTRIES, mutableSetOf())

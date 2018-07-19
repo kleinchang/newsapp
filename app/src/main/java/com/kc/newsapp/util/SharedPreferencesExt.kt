@@ -33,15 +33,16 @@ fun SharedPreferences.updateStringSet(countries: Set<String>, key: String) {
     edit().putStringSet(key, countries).commit()
 }
 
-fun SharedPreferences.updateBookmarkContent(article: Article, toAdd: Boolean) {
+fun SharedPreferences.updateBookmarkContent(article: Article) {
     val type = object : TypeToken<List<Article>>(){}.type
-    val articles = gson.fromJson<MutableList<Article>>("", type)
+    val saved = getString(ListViewModel.KEY_BOOKMARKS_JSON, "[]")
+    val articles = gson.fromJson<MutableList<Article>>(saved, type)
 
-    if (toAdd) {
+    val articleToRemove = articles.firstOrNull { it.title == article.title }
+    if (articleToRemove != null)
+        articles.remove(articleToRemove)
+    else
         articles.add(article)
-    } else {
-        articles.remove(article)
-    }
 
     edit().putString(KEY_BOOKMARKS_JSON, gson.toJson(articles)).apply()
 }

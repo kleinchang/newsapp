@@ -17,6 +17,7 @@ import com.kc.newsapp.data.remote.ArticlesRemoteData
 import com.kc.newsapp.data.remote.ArticlesService
 import com.kc.newsapp.util.hide
 import com.kc.newsapp.util.show
+import com.kc.newsapp.util.updateBookmarkContent
 import com.kc.newsapp.util.updateBookmarkKeys
 import com.kc.newsapp.viewmodel.ListViewModel
 import com.kc.newsapp.viewmodel.ListViewModelFactory
@@ -27,9 +28,9 @@ import kotlinx.coroutines.experimental.launch
 /**
  * Created by kaichang on 18/7/18.
  */
-class ArticleListFragment : Fragment() {
+open class ArticleListFragment : Fragment() {
 
-    private lateinit var rvAdapter: ArticlesAdapter
+    lateinit var rvAdapter: ArticlesAdapter
     private lateinit var viewModel: ListViewModel
 
 
@@ -47,6 +48,10 @@ class ArticleListFragment : Fragment() {
         }.apply {
             fetchArticles()
         }
+
+        viewModel.bookmarks.observe(this, Observer {
+            log("liveData in ViewModel bookmarks $it")
+        })
     }
 
     private fun getViewModel(activity: Activity): ListViewModel {
@@ -54,10 +59,11 @@ class ArticleListFragment : Fragment() {
         return ViewModelProviders.of(this, ListViewModelFactory(activity.applicationContext, repo))[ListViewModel::class.java]
     }
 
-    private fun initRecyclerView(viewModel: ListViewModel) {
+    open fun initRecyclerView(viewModel: ListViewModel) {
         rvAdapter = ArticlesAdapter(viewModel.bookmarks) {
-            position, title ->
-            viewModel.sharedPreferences.updateBookmarkKeys(title)
+            position, article ->
+            viewModel.sharedPreferences.updateBookmarkKeys(article.title)
+            viewModel.sharedPreferences.updateBookmarkContent(article)
             rvAdapter.notifyItemChanged(position)
         }
         LinearLayoutManager(activity).let {
@@ -106,5 +112,9 @@ class ArticleListFragment : Fragment() {
         swipeRefresh.setOnRefreshListener {
             viewModel.fetchArticles(forceUpdate = true)
         }
+    }
+
+    companion object {
+        const val TAG = "ArticleListFragment"
     }
 }

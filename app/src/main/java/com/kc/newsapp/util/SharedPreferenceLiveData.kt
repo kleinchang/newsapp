@@ -1,18 +1,12 @@
 package com.kc.newsapp.util
 
-import android.arch.lifecycle.LifecycleOwner
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.Observer
+import android.arch.lifecycle.LiveData
 import android.content.SharedPreferences
-import java.util.concurrent.atomic.AtomicBoolean
-import android.support.annotation.MainThread
 
 
 abstract class SharedPreferenceLiveData<T>(val sharedPrefs: SharedPreferences,
                                            val key: String,
-                                           val defValue: T) : MutableLiveData<T>() {
-
-    val mPending = AtomicBoolean(false)
+                                           val defValue: T) : LiveData<T>() {
 
     private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
         if (key == this.key) {
@@ -32,21 +26,6 @@ abstract class SharedPreferenceLiveData<T>(val sharedPrefs: SharedPreferences,
         sharedPrefs.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
         super.onInactive()
     }
-
-    @MainThread
-    override fun observe(owner: LifecycleOwner, observer: Observer<T>) {
-        super.observe(owner, Observer { t ->
-            if (mPending.compareAndSet(true, false)) {
-                observer.onChanged(t)
-            }
-        })
-    }
-
-//    @MainThread
-//    override fun setValue(value: T) {
-//        mPending.set(true)
-//        super.setValue(value)
-//    }
 }
 
 
@@ -57,4 +36,13 @@ class SharedPreferenceStringSetLiveData(sharedPrefs: SharedPreferences, key: Str
 
 fun SharedPreferences.stringSetLiveData(key: String, defValue: Set<String>): SharedPreferenceLiveData<Set<String>> {
     return SharedPreferenceStringSetLiveData(this, key, defValue)
+}
+
+fun SharedPreferences.stringLiveData(key: String, defValue: String): SharedPreferenceLiveData<String> {
+    return SharedPreferenceStringLiveData(this, key, defValue)
+}
+
+class SharedPreferenceStringLiveData(sharedPrefs: SharedPreferences, key: String, defValue: String) :
+        SharedPreferenceLiveData<String>(sharedPrefs, key, defValue) {
+    override fun getValueFromPreferences(key: String, defValue: String): String = sharedPrefs.getString(key, defValue)
 }
