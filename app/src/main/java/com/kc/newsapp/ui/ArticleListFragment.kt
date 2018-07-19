@@ -60,7 +60,7 @@ open class ArticleListFragment : Fragment() {
     }
 
     open fun initRecyclerView(viewModel: ListViewModel) {
-        rvAdapter = ArticlesAdapter(viewModel.bookmarks) {
+        rvAdapter = ArticlesAdapter(viewModel.bookmarks, { url -> openArticle(url) } ) {
             position, article ->
             viewModel.sharedPreferences.updateBookmarkKeys(article.title)
             viewModel.sharedPreferences.updateBookmarkContent(article)
@@ -112,6 +112,10 @@ open class ArticleListFragment : Fragment() {
         swipeRefresh.setOnRefreshListener {
             viewModel.fetchArticles(forceUpdate = true)
         }
+    }
+
+    protected fun openArticle(url: String) {
+        context?.let { WebViewActivity.open(it, url) }
     }
 
     companion object {

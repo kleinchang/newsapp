@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class ArticlesAdapter(private val bookmarksLiveData: LiveData<Set<String>>,
+                      private val navigate: (String) -> Unit,
                       private val toggle: (Int, Article) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var articleList: List<Article> = emptyList()
@@ -47,6 +48,8 @@ class ArticlesAdapter(private val bookmarksLiveData: LiveData<Set<String>>,
             bookmark.setImageResource(if (bookmarksLiveData.value?.contains(articleList[position].title) == true)
                 R.drawable.bookmarked else R.drawable.unbookmarked )
             bookmark.setOnClickListener { toggle(position, articleList[position]) }
+
+            setOnClickListener { navigate(articleList[position].url) }
         }
     }
 

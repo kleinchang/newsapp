@@ -14,7 +14,7 @@ import kotlinx.android.synthetic.main.activity_article_list.*
 class BookmarkFragment : ArticleListFragment() {
 
     override fun initRecyclerView(viewModel: ListViewModel) {
-        rvAdapter = ArticlesAdapter(viewModel.bookmarks) {
+        rvAdapter = ArticlesAdapter(viewModel.bookmarks, { url -> openArticle(url) }) {
             position, article ->
             viewModel.sharedPreferences.updateBookmarkKeys(article.title)
             rvAdapter.notifyItemChanged(position)
