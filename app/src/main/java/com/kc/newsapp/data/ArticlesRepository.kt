@@ -2,6 +2,7 @@ package com.kc.newsapp.data
 
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MediatorLiveData
+import android.text.TextUtils
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.ui.log
 import kotlinx.coroutines.experimental.CommonPool
@@ -18,11 +19,13 @@ class ArticlesRepository(private val local: Contract.Local,
     override val loading = remote.loading
     override val error = remote.error
 
-    override fun fetchArticles(forceUpdate: Boolean) {
-        log("fetchArticles $forceUpdate")
-        if (remote.network.value == null || forceUpdate) {
-            launch(CommonPool) { remote.fetchArticles() }
+    override fun fetchArticles(forceUpdate: Boolean, country: String): Listing<Articles> {
+        log("ArticlesRepository fetchArticles $forceUpdate $country")
+        if (remote.network.value == null || forceUpdate || !TextUtils.isEmpty(country)) {
+            launch(CommonPool) { remote.fetchArticles(country = country) }
         }
         //local.fetchArticles()
+
+        return Listing(fetched, remote.loading, remote.error)
     }
 }

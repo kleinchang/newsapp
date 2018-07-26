@@ -1,0 +1,72 @@
+language: android
+sudo: false
+jdk: oraclejdk8
+env:
+  global:
+  - ANDROID_API_LEVEL=26
+  - EMULATOR_API=19
+  - ANDROID_BUILD_TOOLS_VERSION=26.0.2
+  - ANDROID_ABI=armeabi-v7a
+  - ANDROID_TAG=google_apis
+  - ADB_INSTALL_TIMEOUT=5
+  - secure: cIWIEryk3jPGPdm03RlRjUZBrkMxsQPrU6oJ1t6ux2WLSVSFD1VrfVeKl4CCwPvXq6N6GauMqeTVx7UALNZsKB6SkEkgt+WebOsqKwxHdWZ1iIT1v6VT1O4mbm8B48ov/+P25MRNmApHcmHPgbHkb4KcTW4DGKxUhMnkHEXZa1g21a7kQ7gb9naeN+HiWoEHLmKvuBQXsD9WWCe0+wxL1ccTuad9Xw0GhtdxvhbGU1vEiMsuLNIjinCv3swNVYAPAJxA8M4OCU7rDYHTNmS+KqkYEpQ0TQyACqWFEXG5s2eHYECpBxZ0AmS7EwgPzK4d/83BSzItbegdD3JDD50NMctHZxZQuP5ATKvL3E92z/caJrxnaF44nHi02hHqtZMKBW2p+xolafdrSNhjJVCwd6OYyAiGj0pf83tuYsbuUZ3CcD4ce7Fb6I1MQQwaV6JuaZRlrGncX5q4evLW/+pIDpI/QslPrxGQP9Zlj0g2Wn7c7BDH2gOKeWQVl6ld3O4rn1N07YQv5XLOIfe7tCC7j/ZkNToOnvkbdxS6xlFF5bVxCfO0JXzlnnEAGoJVujPYqV8aROFKckTKCUJyz5NbgzJKq41FGBbOZPEGAhrBHdS1NUFY7tYYF3l3gwpWbHkuVjMoKUD+iVxxDOh3xvR4OTzU7xIy4X65OnFRJI1xQ0A=
+  - secure: nz20nt/OLg6wyz+/J55iHq7cdD/7m/mtn5hc/2n2zh2OUIGnRPcTAGFonYrqdp1NUptD7MFh9hJAVEHbkYT7CI6wSRfd2xRLc0BA+HPmz+1s+EipWmmFnyyCjsvaLFQas1yVgpR9PDqgYbruZCKnUWaU7QJy6yC0ns11nJGpuTyNMYLUzhfsfi2qdSsS7jH6Jrl9AxGp3VEOANnRJ/NS8cZy886WGFdchaQ+ivroupU+OvvyeaG3Ym2mSHzK7MEeQ+6AwjMTLrsz84TLCkRnmMKVgOdshahrqCjE5cJz2lzRmXLMmFRNqZsJfYy4OZzwXxvZpg2kTVcaqRMIV9vzS6CU20tXcNe3RUj5lLUeWWz2rDrl1WP8OpSsewg8Q2wowGMPf/FfQXZq/C9GaYggdqimrdD1zYC2be00oBbZZ9Wu+iXxZhROjgUweldNp+33Pimh1rINWsFH+RIw+krfCUGfaqH6yc8ja7SH+Q+YbCdoc1p/3d2HsvQtSFPHiuFAlVoa+584ObhsJmgCMmrHAveWnKBjWdWDWziEP/BmXTc2guQm/tnzceZScBu3D0Otbr6gQ+kuevrcb5XUz33nGscf/I929NrT9rEIKlPzMnHSMbB4+aFRgPN5AZogCzUw6jIPH+Kcn6GSw2uJjM5P6qCYr4o1dvYqMuopKAntlYY=
+before_install:
+- yes | sdkmanager "platforms;android-26"
+- echo yes | android update sdk --all --filter build-tools-$ANDROID_BUILD_TOOLS_VERSION
+  --no-ui --force
+- mkdir "$ANDROID_HOME/licenses" || true
+- echo -e "\nd56f5187479451eabf01fb78af6dfcb131a6481e" > "$ANDROID_HOME/licenses/android-sdk-license"
+- openssl aes-256-cbc -K $encrypted_dcb51fa50ecf_key -iv $encrypted_dcb51fa50ecf_iv
+  -in app/newsapp-key.jks.enc -out app/newsapp-key.jks -d
+before_script:
+- echo no | android create avd --force -n test -t android-$EMULATOR_API --abi google_apis/$ANDROID_ABI
+- emulator -avd test -no-window &
+- android-wait-for-emulator
+- adb shell settings put global window_animation_scale 0 &
+- adb shell settings put global transition_animation_scale 0 &
+- adb shell settings put global animator_duration_scale 0 &
+- adb shell input keyevent 82 &
+android:
+  licenses:
+  - android-sdk-preview-license-.+
+  - android-sdk-license-.+
+  - google-gdk-license-.+
+  components:
+  - tools
+  - platform-tools
+  - android-$ANDROID_API
+  - android-24
+  - android-$EMULATOR_API
+  - build-tools-$ANDROID_BUILD_TOOLS_VERSION
+  - android-$ANDROID_API_LEVEL
+  - extra-android-support
+  - extra-google-google_play_services
+  - extra-google-m2repository
+  - extra-android-m2repository
+  - addon-google_apis-google-$EMULATOR_API
+  - addon-google_apis-google-$ANDROID_API_LEVEL
+  - sys-img-$ANDROID_ABI-google_apis-$EMULATOR_API
+  - sys-img-$ANDROID_ABI-google_apis-$ANDROID_API_LEVEL
+script:
+- "./gradlew clean assemble connectedCheck -PdisablePreDex --stacktrace"
+before_deploy:
+- cp $TRAVIS_BUILD_DIR/app/newsapp-key.jks $HOME
+- cd app/build/outputs/apk/release/
+- jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $HOME/newsapp-key.jks
+  -storepass $storepass -keypass $keypass app-release-unsigned.apk news-aggregator
+- jarsigner -verify app-release-unsigned.apk
+- "${ANDROID_HOME}/build-tools/26.0.2/zipalign -v 4 app-release-unsigned.apk newsapp-release.apk"
+- cd ../../
+- mv apk/ apk-newsapp-$TRAVIS_BUILD_NUMBER-$TRAVIS_COMMIT/
+- mv logs/ logs-newsapp-$TRAVIS_BUILD_NUMBER-$TRAVIS_COMMIT/
+deploy:
+  provider: s3
+  access_key_id: AKIAJJALV6EMTLSWWH5Q
+  secret_access_key:
+    secure: uX6M9TWFnAiH/bunc5Uzbm6Al208uDqGaDjP0xczAXi1HIBhSM2GaIkbkQ4jJW1hn6UDcAzDmE8bgCRZidEcMM9Fjp7uVruoHBQ4XIzKYr80Z0dSKvtydR9G3jMo6gxgZMP/dJblX9fjtoALBcphW4ZNV6bt8vfwV8dv+kbtC+zArxfgbqM5UMBmYpAlleVqK2183e69vQaPw67w+bOrIHJ+Wm28xWHzXr6CFtsG4+TwX8hWfMsa2Jm4ZjILgFk/EC6OCQoCyaLNz0Hz7mHDzDxavrd/JkmkLRYvjSVk8LPQs7aXJwt1OZNIuP7mGq5pbBFaOwOHYht9zAV2UN0x/J+IK497QLXhyxX30cfFRFz7M+K2KZVFkff2i6j29m51N+JKO4MQn2nJqCTDxy1nvQABO41yqTR+76DQurg4U5uf+RUKdCuOOs+a9p/hTau4W7bzMgMFDIl7tJy1wpZwhU4L3UwZblwtt2mjGh7imFgsZm1lsnt+Qh65Gt+Efjeo1QopGFKavYfhfXr3FR7FTRXXJSVclJzHrq3yVeFVyeMe0g1txuueYl2ovuPa0s2EK0ON3fw+QYNSzNZMw4epIgh7yMfuBDeT+LVmNNLQDgJFkRVM8M2bh3kABDHVhhKbNKMjh7uojIHZgRKMPILS684jxyJOtPo8oqeY51l0UZY=
+  bucket: travis-apk
+  skip_cleanup: true
+  on:
+    repo: kleinchang/newsapp
+    branch: ci
