@@ -69,4 +69,4 @@ deploy:
   skip_cleanup: true
   on:
     repo: kleinchang/newsapp
-    branch: ci
+    branch: master
