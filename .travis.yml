@@ -67,6 +67,7 @@ deploy:
     secure: uX6M9TWFnAiH/bunc5Uzbm6Al208uDqGaDjP0xczAXi1HIBhSM2GaIkbkQ4jJW1hn6UDcAzDmE8bgCRZidEcMM9Fjp7uVruoHBQ4XIzKYr80Z0dSKvtydR9G3jMo6gxgZMP/dJblX9fjtoALBcphW4ZNV6bt8vfwV8dv+kbtC+zArxfgbqM5UMBmYpAlleVqK2183e69vQaPw67w+bOrIHJ+Wm28xWHzXr6CFtsG4+TwX8hWfMsa2Jm4ZjILgFk/EC6OCQoCyaLNz0Hz7mHDzDxavrd/JkmkLRYvjSVk8LPQs7aXJwt1OZNIuP7mGq5pbBFaOwOHYht9zAV2UN0x/J+IK497QLXhyxX30cfFRFz7M+K2KZVFkff2i6j29m51N+JKO4MQn2nJqCTDxy1nvQABO41yqTR+76DQurg4U5uf+RUKdCuOOs+a9p/hTau4W7bzMgMFDIl7tJy1wpZwhU4L3UwZblwtt2mjGh7imFgsZm1lsnt+Qh65Gt+Efjeo1QopGFKavYfhfXr3FR7FTRXXJSVclJzHrq3yVeFVyeMe0g1txuueYl2ovuPa0s2EK0ON3fw+QYNSzNZMw4epIgh7yMfuBDeT+LVmNNLQDgJFkRVM8M2bh3kABDHVhhKbNKMjh7uojIHZgRKMPILS684jxyJOtPo8oqeY51l0UZY=
   bucket: travis-apk
   skip_cleanup: true
+  region: ap-southeast-2
   on:
     repo: kleinchang/newsapp
     branch: master
