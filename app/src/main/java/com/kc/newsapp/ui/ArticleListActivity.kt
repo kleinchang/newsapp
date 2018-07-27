@@ -220,10 +220,10 @@ class ArticleListActivity : AppCompatActivity() {
             openDialog(viewModel)
             true
         }
-        R.id.action_favorite -> {
-            openDialog(viewModel)
-            true
-        }
+//        R.id.action_favorite -> {
+//            openDialog(viewModel)
+//            true
+//        }
 //        R.id.jp -> {
 //            item.isChecked = !item.isChecked
 //            pref.updateCountry("jp", item.isChecked)
