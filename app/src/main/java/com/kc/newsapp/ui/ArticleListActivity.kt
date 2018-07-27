@@ -63,6 +63,7 @@ class ArticleListActivity : AppCompatActivity() {
                     true
                 }
                 else -> {
+                    throw Exception("Artificial")
                     true
                 }
             }
