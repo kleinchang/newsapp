@@ -22,3 +22,7 @@
 
 -dontwarn okio.**
 -dontwarn com.squareup.okhttp.**
+
+
+-keepattributes Signature
+-keep class com.kc.newsapp.data.model.** { *; }
