@@ -1,10 +1,10 @@
 package com.kc.newsapp.ui
 
-import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
@@ -49,14 +49,14 @@ open class ArticleListFragment : Fragment() {
             fetchArticles()
         }
 
-        viewModel.bookmarks.observe(this, Observer {
+        viewModel.bookmarks.observe(activity!!, Observer {
             log("liveData in ViewModel bookmarks $it")
         })
     }
 
-    private fun getViewModel(activity: Activity): ListViewModel {
+    private fun getViewModel(activity: FragmentActivity): ListViewModel {
         val repo = ArticlesRepository(ArticlesLocalData(activity.applicationContext), ArticlesRemoteData(ArticlesService()))
-        return ViewModelProviders.of(this, ListViewModelFactory(activity.applicationContext, repo))[ListViewModel::class.java]
+        return ViewModelProviders.of(activity, ListViewModelFactory(activity.applicationContext, repo))[ListViewModel::class.java]
     }
 
     open fun initRecyclerView(viewModel: ListViewModel) {
