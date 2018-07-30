@@ -80,7 +80,7 @@ open class ArticleListFragment : Fragment() {
             }
         })
         viewModel.articles.observe(this, Observer {
-            it?.let {
+            if (it?.articles?.isNotEmpty() == true) {
                 rvAdapter.data = it
                 list.show()
                 errorView.hide()
@@ -93,12 +93,13 @@ open class ArticleListFragment : Fragment() {
             if (it == true) {
                 log("Error ->")
                 list.hide()
+                errorView.text = "Error"
                 errorView.show()
             }
         })
     }
 
-    private fun initSwipeToRefresh(viewModel: ListViewModel) {
+    open fun initSwipeToRefresh(viewModel: ListViewModel) {
         viewModel.getLoading().observe(this, Observer {
             log("getLoading $it")
             if (it != null) {

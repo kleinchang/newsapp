@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
+import com.kc.newsapp.R
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.util.hide
 import com.kc.newsapp.util.show
@@ -38,12 +39,18 @@ class BookmarkFragment : ArticleListFragment() {
         list.adapter = rvAdapter
 
         viewModel.bookmarkArticleList.observe(this, Observer {
-            it?.let {
+            if (it?.isNotEmpty() == true) {
                 rvAdapter.data = Articles(articles = it)
                 list.show()
                 errorView.hide()
+            } else {
+                errorView.text = getString(R.string.prompt_empty_bookmark)
             }
         })
+    }
+
+    override fun initSwipeToRefresh(viewModel: ListViewModel) {
+        swipeRefresh.isEnabled = false
     }
 
     companion object {

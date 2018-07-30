@@ -179,7 +179,7 @@ class ArticleListActivity : AppCompatActivity() {
             val set = mutableSetOf<String>()
             viewModel.countryOfInterest.value?.forEach { set.add(it) }
 
-            setTitle(R.string.title).setMultiChoiceItems(array, checked) {
+            setTitle(R.string.title_select_countries).setMultiChoiceItems(array, checked) {
                 dialog, which, isChecked ->
                 if (isChecked)
                     set.add(array[which])
