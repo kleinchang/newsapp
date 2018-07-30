@@ -24,9 +24,9 @@ import kotlinx.coroutines.experimental.async
 class ListViewModel(context: Context, private val repo: Contract.Repository) : ViewModel() {
 
     companion object {
-        val KEY_COUNTRIES = "country_list"
-        val KEY_BOOKMARKS = "article_list"
-        val KEY_BOOKMARKS_JSON = "article_list_json"
+        const val KEY_COUNTRIES = "country_list"
+        const val KEY_BOOKMARKS = "article_list"
+        const val KEY_BOOKMARKS_JSON = "article_list_json"
     }
     private val gson by lazy { Gson() }
     private val service by lazy { ArticlesService() }

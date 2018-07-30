@@ -42,7 +42,7 @@ fun SharedPreferences.updateBookmarkContent(article: Article) {
     if (articleToRemove != null)
         articles.remove(articleToRemove)
     else
-        articles.add(article)
+        articles.add(0, article)
 
     edit().putString(KEY_BOOKMARKS_JSON, gson.toJson(articles)).apply()
 }

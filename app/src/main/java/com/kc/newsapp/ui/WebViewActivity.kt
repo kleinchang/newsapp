@@ -3,13 +3,15 @@ package com.kc.newsapp.ui
 import android.annotation.TargetApi
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import com.kc.newsapp.R
+import com.kc.newsapp.util.hide
+import com.kc.newsapp.util.show
 import kotlinx.android.synthetic.main.activity_webview.*
 
 
@@ -46,6 +48,37 @@ class WebViewActivity : AppCompatActivity() {
                 view?.loadUrl(url)
                 return true
             }
+
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                progress.show()
+            }
+
+            override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                super.onReceivedError(view, request, error)
+                progress.hide()
+            }
+
+            override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+                super.onReceivedSslError(view, handler, error)
+                progress.hide()
+            }
+        }
+
+        webview.webChromeClient = object : WebChromeClient() {
+
+            override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                super.onProgressChanged(view, newProgress)
+                log("Progress $newProgress")
+                if (newProgress > 40)
+                    progress.hide()
+            }
+        }
+
+        webview.settings.apply {
+            javaScriptEnabled = true
+            setSupportZoom(true)
+            builtInZoomControls = true
         }
 
         webview.loadUrl(url)
