@@ -22,6 +22,7 @@ import java.util.*
 
 class ArticlesAdapter(private val bookmarksLiveData: LiveData<Set<String>>,
                       private val navigate: (String) -> Unit,
+                      private var bookmarkMode: Boolean = false,
                       private val toggle: (Int, Article) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var articleList: List<Article> = emptyList()
@@ -30,6 +31,9 @@ class ArticlesAdapter(private val bookmarksLiveData: LiveData<Set<String>>,
         articleList = value.articles
         notifyDataSetChanged()
     }
+
+    val list: MutableList<Article>
+    get() = articleList as MutableList<Article>
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return ArticleVH.create(parent)
@@ -45,9 +49,18 @@ class ArticlesAdapter(private val bookmarksLiveData: LiveData<Set<String>>,
                     TimeZone.getTimeZone("Australia/Sydney"))
             //log("${articleList[position].title} load ${articleList[position].urlToImage}")
             image.load(articleList[position].urlToImage, progress)
-            bookmark.setImageResource(if (bookmarksLiveData.value?.contains(articleList[position].title) == true)
-                R.drawable.bookmarked else R.drawable.unbookmarked )
-            bookmark.setOnClickListener { toggle(position, articleList[position]) }
+
+            if (bookmarkMode) {
+                bookmark.hide()
+                delete.show()
+                delete.setOnClickListener { toggle(position, articleList[position]) }
+            } else {
+                bookmark.show()
+                delete.hide()
+                bookmark.setImageResource(if (bookmarksLiveData.value?.contains(articleList[position].title) == true)
+                    R.drawable.bookmarked else R.drawable.unbookmarked )
+                bookmark.setOnClickListener { toggle(position, articleList[position]) }
+            }
 
             setOnClickListener { navigate(articleList[position].url) }
         }

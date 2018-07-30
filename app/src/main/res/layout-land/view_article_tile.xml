@@ -59,6 +59,14 @@
                 android:scaleType="fitCenter"
                 android:src="@drawable/unbookmarked" />
 
+            <ImageView
+                android:id="@+id/delete"
+                android:layout_width="18dp"
+                android:layout_height="26dp"
+                android:layout_alignParentRight="true"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_cancel" />
+
         </RelativeLayout>
 
     </LinearLayout>
@@ -66,14 +74,14 @@
     <RelativeLayout
         android:layout_width="0dp"
         android:layout_weight="1"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="fitXY"
-        android:adjustViewBounds="true" />
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:adjustViewBounds="true" />
 
         <ProgressBar
             android:id="@+id/progress"
