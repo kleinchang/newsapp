@@ -1,12 +1,9 @@
 package com.kc.newsapp.ui
 
-import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
-import android.support.v7.widget.DividerItemDecoration
-import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
 import com.kc.newsapp.data.ArticlesRepository
@@ -22,12 +19,9 @@ import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.data.remote.Endpoint
 import com.kc.newsapp.util.hide
 import com.kc.newsapp.util.show
-import com.kc.newsapp.util.updateBookmarkKeys
 import com.kc.newsapp.util.updateCountries
 import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.launch
 
 
 class ArticleListActivity : AppCompatActivity() {
@@ -174,17 +168,18 @@ class ArticleListActivity : AppCompatActivity() {
 
         AlertDialog.Builder(this@ArticleListActivity).apply {
 
-            val array = resources.getStringArray(R.array.country)
-            val checked = BooleanArray(array.size, { i -> viewModel.countryOfInterest.value?.contains(array[i]) ?: false })
+            val countryCode = resources.getStringArray(R.array.country_code)
+            val checked = BooleanArray(countryCode.size, { i -> viewModel.countryOfInterest.value?.contains(countryCode[i]) ?: false })
             val set = mutableSetOf<String>()
             viewModel.countryOfInterest.value?.forEach { set.add(it) }
 
-            setTitle(R.string.title_select_countries).setMultiChoiceItems(array, checked) {
+            val countryName = resources.getStringArray(R.array.country_name)
+            setTitle(R.string.title_select_countries).setMultiChoiceItems(countryName, checked) {
                 dialog, which, isChecked ->
                 if (isChecked)
-                    set.add(array[which])
+                    set.add(countryCode[which])
                 else
-                    set.remove(array[which])
+                    set.remove(countryCode[which])
             }.setPositiveButton(R.string.ok) {
                 dialog, which ->
                 log("OK ${set.joinToString() }")
