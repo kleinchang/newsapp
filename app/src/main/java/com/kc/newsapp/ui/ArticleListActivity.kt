@@ -64,20 +64,6 @@ class ArticleListActivity : AppCompatActivity() {
         }
 
         viewModel = getViewModel()
-
-        /*
-        viewModel = getViewModel().also {
-            initRecyclerView(it)
-            initSwipeToRefresh(it)
-            initErrorView(it)
-        }.apply {
-            fetchArticles()
-        }
-
-        viewModel.bookmarks.observe(this, Observer {
-            log("liveData in ViewModel bookmarks $it")
-        })
-        */
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -102,62 +88,6 @@ class ArticleListActivity : AppCompatActivity() {
         val repo = ArticlesRepository(ArticlesLocalData(applicationContext), ArticlesRemoteData(ArticlesService()))
         return ViewModelProviders.of(this, ListViewModelFactory(applicationContext, repo))[ListViewModel::class.java]
     }
-
-    /*
-    private fun initRecyclerView(viewModel: ListViewModel) {
-        rvAdapter = ArticlesAdapter(viewModel.bookmarks, viewModel.bookmarkJson) {
-            position, article ->
-            viewModel.sharedPreferences.updateBookmarkKeys(article.title)
-            rvAdapter.notifyItemChanged(position)
-        }
-        LinearLayoutManager(this@ArticleListActivity).let {
-            list.layoutManager = it
-            list.addItemDecoration(DividerItemDecoration(list.context, it.orientation))
-        }
-        list.adapter = rvAdapter
-
-        viewModel.getCombinedList().observe(this, Observer {
-            it?.let {
-                launch (UI) {
-                    viewModel.articles.value = it.await()
-                }
-            }
-        })
-        viewModel.articles.observe(this, Observer {
-            it?.let {
-                rvAdapter.data = it
-                list.show()
-                errorView.hide()
-            }
-        })
-    }
-
-    private fun initErrorView(viewModel: ListViewModel) {
-        viewModel.getError().observe(this, Observer {
-            if (it == true) {
-                log("Error ->")
-                list.hide()
-                errorView.show()
-            }
-        })
-    }
-
-    private fun initSwipeToRefresh(viewModel: ListViewModel) {
-        viewModel.getLoading().observe(this, Observer {
-            log("getLoading $it")
-            if (it != null) {
-                swipeRefresh.isRefreshing = it
-                if (it) {
-                    errorView.hide()
-                    list.hide()
-                }
-            }
-        })
-        swipeRefresh.setOnRefreshListener {
-            viewModel.fetchArticles(forceUpdate = true)
-        }
-    }
-    */
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.actions, menu)
@@ -218,21 +148,6 @@ class ArticleListActivity : AppCompatActivity() {
 //        R.id.action_favorite -> {
 //            openDialog(viewModel)
 //            true
-//        }
-//        R.id.jp -> {
-//            item.isChecked = !item.isChecked
-//            pref.updateCountry("jp", item.isChecked)
-//            false
-//        }
-//        R.id.tw -> {
-//            item.isChecked = !item.isChecked
-//            pref.updateCountry("tw", item.isChecked)
-//            true
-//        }
-//        R.id.us -> {
-//            item.isChecked = !item.isChecked
-//            pref.updateCountry("us", item.isChecked)
-//            false
 //        }
         else -> {
             super.onOptionsItemSelected(item)

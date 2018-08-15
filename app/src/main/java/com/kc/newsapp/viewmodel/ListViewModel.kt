@@ -6,9 +6,10 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations.map
 import android.arch.lifecycle.ViewModel
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.kc.newsapp.App
 import com.kc.newsapp.data.Contract
 import com.kc.newsapp.data.model.Article
 import com.kc.newsapp.data.model.Articles
@@ -19,9 +20,14 @@ import com.kc.newsapp.util.stringLiveData
 import com.kc.newsapp.util.stringSetLiveData
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
+import javax.inject.Inject
 
 
 class ListViewModel(context: Context, private val repo: Contract.Repository) : ViewModel() {
+
+    init {
+        App.appComponent.inject(this)
+    }
 
     companion object {
         const val KEY_COUNTRIES = "country_list"
@@ -30,7 +36,7 @@ class ListViewModel(context: Context, private val repo: Contract.Repository) : V
     }
     private val gson by lazy { Gson() }
     private val service by lazy { ArticlesService() }
-    val sharedPreferences by lazy { context.getSharedPreferences("config", MODE_PRIVATE) }
+    @Inject lateinit var sharedPreferences: SharedPreferences
 
     val bookmarkSharedPref = sharedPreferences.stringSetLiveData(KEY_BOOKMARKS, mutableSetOf())
     val bookmarks = MediatorLiveData<Set<String>>().apply {

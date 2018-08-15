@@ -94,5 +94,6 @@ fun ImageView.load(url: String?, progressBar: ProgressBar? = null) {
         })
     } else {
         hide()
+        progressBar?.hide()
     }
 }

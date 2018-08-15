@@ -1,6 +1,7 @@
 package com.kc.newsapp
 
 import android.app.Application
+import android.support.annotation.VisibleForTesting
 import com.crashlytics.android.Crashlytics
 import com.kc.newsapp.di.AppComponent
 import com.kc.newsapp.di.AppModule
@@ -22,5 +23,10 @@ class App : Application() {
         Fabric.Builder(this).kits(Crashlytics()).debuggable(true).build().let {
             Fabric.with(it)
         }
+    }
+
+    @VisibleForTesting
+    fun setComponent(component: AppComponent) {
+        appComponent = component
     }
 }
