@@ -28,8 +28,8 @@ class BookmarkFragment : ArticleListFragment() {
                 notifyItemChanged(position)
             }
             handler.postDelayed({
-                viewModel.sharedPreferences.updateBookmarkKeys(article.title)
-                viewModel.sharedPreferences.updateBookmarkContent(article)
+                viewModel.updateBookmarkKeys(article.title)
+                viewModel.updateBookmarkContent(article)
             }, 1000)
         }
         LinearLayoutManager(activity).let {

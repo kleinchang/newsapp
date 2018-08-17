@@ -11,19 +11,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.kc.newsapp.R
-import com.kc.newsapp.data.ArticlesRepository
-import com.kc.newsapp.data.local.ArticlesLocalData
-import com.kc.newsapp.data.remote.ArticlesRemoteData
-import com.kc.newsapp.data.remote.ArticlesService
 import com.kc.newsapp.util.hide
 import com.kc.newsapp.util.show
-import com.kc.newsapp.util.updateBookmarkContent
-import com.kc.newsapp.util.updateBookmarkKeys
 import com.kc.newsapp.viewmodel.ListViewModel
-import com.kc.newsapp.viewmodel.ListViewModelFactory
 import kotlinx.android.synthetic.main.activity_article_list.*
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.launch
 
 /**
  * Created by kaichang on 18/7/18.
@@ -55,15 +46,14 @@ open class ArticleListFragment : Fragment() {
     }
 
     private fun getViewModel(activity: FragmentActivity): ListViewModel {
-        val repo = ArticlesRepository(ArticlesLocalData(activity.applicationContext), ArticlesRemoteData(ArticlesService()))
-        return ViewModelProviders.of(activity, ListViewModelFactory(activity.applicationContext, repo))[ListViewModel::class.java]
+        return ViewModelProviders.of(activity)[ListViewModel::class.java]
     }
 
     open fun initRecyclerView(viewModel: ListViewModel) {
         rvAdapter = ArticlesAdapter(viewModel.bookmarks, { url -> openArticle(url) } ) {
             position, article ->
-            viewModel.sharedPreferences.updateBookmarkKeys(article.title)
-            viewModel.sharedPreferences.updateBookmarkContent(article)
+            viewModel.updateBookmarkKeys(article.title)
+            viewModel.updateBookmarkContent(article)
             rvAdapter.notifyItemChanged(position)
         }
         LinearLayoutManager(activity).let {
@@ -72,15 +62,8 @@ open class ArticleListFragment : Fragment() {
         }
         list.adapter = rvAdapter
 
-        viewModel.getCombinedList().observe(this, Observer {
+        viewModel.combinedList().observe(this, Observer {
             it?.let {
-                launch (UI) {
-                    viewModel.articles.value = it.await()
-                }
-            }
-        })
-        viewModel.articles.observe(this, Observer {
-            if (it?.articles?.isNotEmpty() == true) {
                 rvAdapter.data = it
                 list.show()
                 errorView.hide()

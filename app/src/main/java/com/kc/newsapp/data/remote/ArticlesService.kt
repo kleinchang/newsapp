@@ -3,6 +3,7 @@ package com.kc.newsapp.data.remote
 import com.google.gson.Gson
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.data.remote.Endpoint.API_KEY
+import com.kc.newsapp.testing.TestOpen
 import com.kc.newsapp.ui.log
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
@@ -10,6 +11,7 @@ import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
+@TestOpen
 class ArticlesService {
 
     fun fetchArticles(url: String, country: String, delayDuration: Int = 0): Articles {

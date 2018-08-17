@@ -1,5 +1,6 @@
 package com.kc.newsapp.di
 
+import com.kc.newsapp.ui.ArticleListActivity
 import com.kc.newsapp.viewmodel.ListViewModel
 import dagger.Component
 import javax.inject.Singleton
@@ -9,5 +10,5 @@ import javax.inject.Singleton
 @Component(modules = [AppModule::class, DataModule::class])
 interface AppComponent {
 
-    fun inject(viewModel: ListViewModel)
+    fun inject(activity: ArticleListActivity)
 }

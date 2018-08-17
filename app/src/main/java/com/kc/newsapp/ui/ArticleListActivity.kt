@@ -1,6 +1,7 @@
 package com.kc.newsapp.ui
 
 import android.arch.lifecycle.ViewModelProviders
+import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
@@ -22,12 +23,14 @@ import com.kc.newsapp.util.show
 import com.kc.newsapp.util.updateCountries
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
+import javax.inject.Inject
 
 
 class ArticleListActivity : AppCompatActivity() {
 
     private lateinit var rvAdapter: ArticlesAdapter
     private lateinit var viewModel: ListViewModel
+    @Inject lateinit var sharedPreferences: SharedPreferences
 
     companion object {
         const val CURRENT_TAB = "tab"
@@ -39,6 +42,7 @@ class ArticleListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+        App.appComponent.inject(this)
 
         currentTab = savedInstanceState?.getBoolean(CURRENT_TAB, true) ?: true
         if (currentTab)
@@ -86,7 +90,7 @@ class ArticleListActivity : AppCompatActivity() {
 
     private fun getViewModel(): ListViewModel {
         val repo = ArticlesRepository(ArticlesLocalData(applicationContext), ArticlesRemoteData(ArticlesService()))
-        return ViewModelProviders.of(this, ListViewModelFactory(applicationContext, repo))[ListViewModel::class.java]
+        return ViewModelProviders.of(this, ListViewModelFactory(sharedPreferences, repo))[ListViewModel::class.java]
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -113,7 +117,7 @@ class ArticleListActivity : AppCompatActivity() {
             }.setPositiveButton(R.string.ok) {
                 dialog, which ->
                 log("OK ${set.joinToString() }")
-                viewModel.sharedPreferences.updateCountries(set)
+                viewModel.updateCountries(set)
                 //viewModel.sharedPreferences.updateStringSet(set, KEY_BOOKMARKS)
             }.setNegativeButton(R.string.cancel) {
                 dialog, which ->
