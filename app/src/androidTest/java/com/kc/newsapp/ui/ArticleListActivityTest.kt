@@ -52,6 +52,7 @@ class ArticleListActivityTest {
 
     @Rule
     @JvmField var activityTestRule = ActivityTestRule(ArticleListActivity::class.java, false, false)
+    private var mIdlingResource: IdlingResource? = null
 
     @Before fun setUp() {
         Intents.init()
@@ -67,6 +68,10 @@ class ArticleListActivityTest {
 
     @After fun tearDown() {
         Intents.release()
+        if (mIdlingResource != null) {
+            IdlingRegistry.getInstance().unregister(mIdlingResource)
+            mIdlingResource = null
+        }
 
         PreferenceManager.getDefaultSharedPreferences(getApplication()).edit().apply {
             remove(ListViewModel.KEY_COUNTRIES)
@@ -85,8 +90,7 @@ class ArticleListActivityTest {
             server.enqueue(MockResponse().setResponseCode(200).setBody(jsonResponse).setBodyDelay(1, TimeUnit.SECONDS))
         }
 
-        launchActivity(activityTestRule)
-        Thread.sleep(5000)
+        mIdlingResource = launchActivity(activityTestRule)
 
         verifyScreen(successful = true)
         val objResponse = Gson().fromJson(jsonResponse, Articles::class.java)
@@ -94,8 +98,7 @@ class ArticleListActivityTest {
     }
 
     @Test fun selectCountriesOfInterest() {
-        launchActivity(activityTestRule)
-        Thread.sleep(2000)
+        mIdlingResource = launchActivity(activityTestRule)
 
         // open option menu
         openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getTargetContext())
@@ -116,7 +119,6 @@ class ArticleListActivityTest {
 
         // click on OK botton
         onView(withId(android.R.id.button1)).perform(click())
-        Thread.sleep(2000)
 
         verifyScreen(successful = true)
         val objResponse = Gson().fromJson(jsonResponse, Articles::class.java)
@@ -124,12 +126,10 @@ class ArticleListActivityTest {
     }
 
     @Test fun switchTab() {
-        launchActivity(activityTestRule)
-        Thread.sleep(2000)
+        mIdlingResource = launchActivity(activityTestRule)
         verifyScreen(false, R.string.prompt_select_countries)
 
         onView(withId(R.id.action_favorites)).perform(click())
-        Thread.sleep(1000)
         verifyScreen(false, R.string.prompt_empty_bookmark)
     }
 
@@ -143,8 +143,7 @@ class ArticleListActivityTest {
             server.enqueue(MockResponse().setResponseCode(200).setBody(jsonResponse).setBodyDelay(1, TimeUnit.SECONDS))
         }
 
-        launchActivity(activityTestRule)
-        Thread.sleep(3000)
+        mIdlingResource = launchActivity(activityTestRule)
         verifyScreen(true)
 
         // add articles to bookmark
@@ -156,12 +155,13 @@ class ArticleListActivityTest {
 
         // switch tab
         onView(withId(R.id.action_favorites)).perform(click())
-        Thread.sleep(1000)
 
         // 3 bookmarks added
         verifyNewsListSize(positionToClick.size)
         verifyScreen(true)
     }
+
+//    @Test fun startEmptyPullToRefresh() { }
 
     @Test fun openNews() {
         val countries = setOf("ca")
@@ -173,8 +173,7 @@ class ArticleListActivityTest {
             server.enqueue(MockResponse().setResponseCode(200).setBody(jsonResponse).setBodyDelay(1, TimeUnit.SECONDS))
         }
 
-        launchActivity(activityTestRule)
-        Thread.sleep(2000)
+        mIdlingResource = launchActivity(activityTestRule)
 
         val positionToClick = setOf(5, 10, 15)
         val objResponse = Gson().fromJson(jsonResponse, Articles::class.java)
@@ -188,14 +187,15 @@ class ArticleListActivityTest {
             Espresso.pressBack()
         }
         intended(hasComponent(WebViewActivity::class.java.name), times(positionToClick.size))
-
-        Thread.sleep(2000)
     }
 
     @Test fun retainListScrolling() { }
 
-    private fun launchActivity(rule: ActivityTestRule<ArticleListActivity>) {
+    private fun launchActivity(rule: ActivityTestRule<ArticleListActivity>): IdlingResource? {
         rule.launchActivity(Intent())
+        var idlingResource = rule.activity.countingIdlingResource
+        IdlingRegistry.getInstance().register(idlingResource)
+        return idlingResource
     }
 
     private fun preloadCountriesOfInterest(countries: Set<String>) {

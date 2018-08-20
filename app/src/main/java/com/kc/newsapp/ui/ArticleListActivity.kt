@@ -4,6 +4,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.annotation.VisibleForTesting
 import android.support.v7.app.AlertDialog
 import android.view.Menu
 import android.view.MenuItem
@@ -16,13 +17,7 @@ import com.kc.newsapp.viewmodel.ListViewModelFactory
 import kotlinx.android.synthetic.main.activity_article_list.*
 import kotlinx.android.synthetic.main.activity_main.*
 import com.kc.newsapp.*
-import com.kc.newsapp.data.model.Articles
-import com.kc.newsapp.data.remote.Endpoint
-import com.kc.newsapp.util.hide
-import com.kc.newsapp.util.show
-import com.kc.newsapp.util.updateCountries
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
+import com.kc.newsapp.testing.EspressoIdlingResource
 import javax.inject.Inject
 
 
@@ -116,31 +111,10 @@ class ArticleListActivity : AppCompatActivity() {
                     set.remove(countryCode[which])
             }.setPositiveButton(R.string.ok) {
                 dialog, which ->
-                log("OK ${set.joinToString() }")
                 viewModel.updateCountries(set)
-                //viewModel.sharedPreferences.updateStringSet(set, KEY_BOOKMARKS)
             }.setNegativeButton(R.string.cancel) {
                 dialog, which ->
-                log("Cancel $which")
             }.create().show()
-        }
-
-    }
-
-    fun query(value: Set<String>) {
-        log("query ${value.joinToString() }}")
-        val service = ArticlesService()
-        val deferred = value?.map { c ->
-            async { service.fetchArticles(url = Endpoint.URL, country = c) }
-        }
-        async (CommonPool) {
-            log("async start")
-            deferred?.flatMap { it.await().articles }?.let {
-                rvAdapter.data = Articles(articles = it.sortedByDescending { it.publishedAt })
-                log("async Size: ${it.size}")
-                list.show()
-                errorView.hide()
-            }
         }
     }
 
@@ -157,4 +131,6 @@ class ArticleListActivity : AppCompatActivity() {
             super.onOptionsItemSelected(item)
         }
     }
+
+    val countingIdlingResource @VisibleForTesting get() = EspressoIdlingResource.countingIdlingResource
 }

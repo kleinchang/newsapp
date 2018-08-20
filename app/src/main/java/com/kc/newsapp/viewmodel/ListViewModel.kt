@@ -10,7 +10,6 @@ import com.kc.newsapp.data.Contract
 import com.kc.newsapp.data.Listing
 import com.kc.newsapp.data.model.Article
 import com.kc.newsapp.data.model.Articles
-import com.kc.newsapp.ui.log
 import com.kc.newsapp.util.*
 
 
@@ -28,10 +27,10 @@ class ListViewModel(private val sharedPreferences: SharedPreferences, private va
     val bookmarks = MediatorLiveData<Set<String>>().apply {
         addSource(bookmarkLiveData) {
             if (value != it) {
-                log("Bookmarks: $value != $it")
+                Util.log("Bookmarks: $value != $it")
                 value = it
             } else {
-                log("Bookmarks: $value == $it")
+                Util.log("Bookmarks: $value == $it")
             }
         }
     }
@@ -46,10 +45,10 @@ class ListViewModel(private val sharedPreferences: SharedPreferences, private va
     val countryOfInterest = MediatorLiveData<Set<String>>().apply {
         addSource(countryOfInterestLiveData) {
             if (value != it) {
-                log("CountryOfInterest: $value != $it")
+                Util.log("CountryOfInterest: $value != $it")
                 value = it
             } else {
-                log("CountryOfInterest: $value == $it")
+                Util.log("CountryOfInterest: $value == $it")
             }
         }
     }

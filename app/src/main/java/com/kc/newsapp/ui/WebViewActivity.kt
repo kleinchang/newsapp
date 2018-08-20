@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.webkit.*
 import com.kc.newsapp.R
+import com.kc.newsapp.util.Util
 import com.kc.newsapp.util.hide
 import com.kc.newsapp.util.show
 import kotlinx.android.synthetic.main.activity_webview.*
@@ -69,7 +70,7 @@ class WebViewActivity : AppCompatActivity() {
 
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 super.onProgressChanged(view, newProgress)
-                log("Progress $newProgress")
+                Util.log("Progress $newProgress")
                 if (newProgress > 40)
                     progress.hide()
             }

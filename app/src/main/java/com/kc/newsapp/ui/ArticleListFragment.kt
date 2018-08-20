@@ -3,6 +3,7 @@ package com.kc.newsapp.ui
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.annotation.VisibleForTesting
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentActivity
 import android.support.v7.widget.DividerItemDecoration
@@ -11,6 +12,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.kc.newsapp.R
+import com.kc.newsapp.testing.EspressoIdlingResource
+import com.kc.newsapp.util.Util
 import com.kc.newsapp.util.hide
 import com.kc.newsapp.util.show
 import com.kc.newsapp.viewmodel.ListViewModel
@@ -41,7 +44,7 @@ open class ArticleListFragment : Fragment() {
         }
 
         viewModel.bookmarks.observe(activity!!, Observer {
-            log("liveData in ViewModel bookmarks $it")
+            Util.log("liveData in ViewModel bookmarks $it")
         })
     }
 
@@ -74,7 +77,7 @@ open class ArticleListFragment : Fragment() {
     private fun initErrorView(viewModel: ListViewModel) {
         viewModel.getError().observe(this, Observer {
             if (it == true) {
-                log("Error ->")
+                Util.log("Error ->")
                 list.hide()
                 errorView.text = "Error"
                 errorView.show()
@@ -84,12 +87,15 @@ open class ArticleListFragment : Fragment() {
 
     open fun initSwipeToRefresh(viewModel: ListViewModel) {
         viewModel.getLoading().observe(this, Observer {
-            log("getLoading $it")
+            Util.log("getLoading $it")
             if (it != null) {
                 swipeRefresh.isRefreshing = it
                 if (it) {
+                    setIsAppBusy(true)
                     errorView.hide()
                     list.hide()
+                } else {
+                    setIsAppBusy(false)
                 }
             }
         })
@@ -100,6 +106,17 @@ open class ArticleListFragment : Fragment() {
 
     protected fun openArticle(url: String) {
         context?.let { WebViewActivity.open(it, url) }
+    }
+
+    @VisibleForTesting
+    private fun setIsAppBusy(busy: Boolean) {
+        Util.log("setIsAppBusy $busy")
+        if (busy) {
+            EspressoIdlingResource.increment() // App is busy until further notice
+        } else {
+            if (!EspressoIdlingResource.countingIdlingResource.isIdleNow)
+                EspressoIdlingResource.decrement() // Set app as idle.
+        }
     }
 
     companion object {

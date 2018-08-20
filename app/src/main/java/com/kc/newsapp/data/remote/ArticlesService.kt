@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.data.remote.Endpoint.API_KEY
 import com.kc.newsapp.testing.TestOpen
-import com.kc.newsapp.ui.log
+import com.kc.newsapp.util.Util
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
 import okhttp3.HttpUrl
@@ -29,11 +29,11 @@ class ArticlesService {
 
         val request = Request.Builder().url(httpBuilder.build()).build()
         val data = arrayOfNulls<Any>(1)
-        log("ArticlesService fetchArticles $country")
+        Util.log("ArticlesService fetchArticles $country")
         // TODO: https://stackoverflow.com/questions/30538640/javax-net-ssl-sslexception-read-error-ssl-0x9524b800-i-o-error-during-system
         val res = client.newCall(request).execute()
         if (res.isSuccessful) {
-            log("ArticlesService fetchArticles $country successful")
+            Util.log("ArticlesService fetchArticles $country successful")
             val response = res.body()?.string()
             val content: Articles = Gson().fromJson(response, Articles::class.java)
             data[0] = content

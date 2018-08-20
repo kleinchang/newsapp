@@ -4,7 +4,7 @@ import android.arch.lifecycle.MutableLiveData
 import com.kc.newsapp.data.Contract
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.testing.TestOpen
-import com.kc.newsapp.ui.log
+import com.kc.newsapp.util.Util
 import kotlinx.coroutines.experimental.async
 
 @TestOpen
@@ -15,7 +15,7 @@ class ArticlesRemoteData(private val service: ArticlesService) : Contract.Remote
     override val error = MutableLiveData<Boolean>()
 
     override suspend fun fetchArticles(endpoint: String, countries: Set<String>) {
-        log("ArticlesRemoteData fetchArticles $countries")
+        Util.log("ArticlesRemoteData fetchArticles $countries")
         try {
             loading.postValue(true)
 

@@ -27,4 +27,5 @@ object Util {
         }
     }
 
+    fun log(msg: String) = println("Kai: [${Thread.currentThread().name}] $msg")
 }

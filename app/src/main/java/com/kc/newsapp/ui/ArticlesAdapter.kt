@@ -47,7 +47,6 @@ class ArticlesAdapter(private val bookmarksLiveData: LiveData<Set<String>>,
             published_at.text = Util.formatTimestamp(articleList[position].publishedAt,
                     SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
                     TimeZone.getTimeZone("Australia/Sydney"))
-            //log("${articleList[position].title} load ${articleList[position].urlToImage}")
             image.load(articleList[position].urlToImage, progress)
 
             if (bookmarkMode) {
@@ -77,8 +76,6 @@ class ArticlesAdapter(private val bookmarksLiveData: LiveData<Set<String>>,
         }
     }
 }
-
-fun log(msg: String) = println("Kai: [${Thread.currentThread().name}] $msg")
 
 fun ImageView.load(url: String?, progressBar: ProgressBar? = null) {
     if (!TextUtils.isEmpty(url)) {
