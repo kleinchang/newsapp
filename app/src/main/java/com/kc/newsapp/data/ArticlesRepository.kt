@@ -24,7 +24,7 @@ class ArticlesRepository(private val local: Contract.Local,
 
     override fun fetchArticles(forceUpdate: Boolean, countries: Set<String>): Listing<Articles> {
         log("ArticlesRepository fetchArticles $forceUpdate $countries")
-        if (remote.network.value == null || forceUpdate || countries.isNotEmpty()) {
+        if (forceUpdate || countries.isNotEmpty()) {
             launch (CommonPool) {
                 remote.fetchArticles(countries = countries)
             }

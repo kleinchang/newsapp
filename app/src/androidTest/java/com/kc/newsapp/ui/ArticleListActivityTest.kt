@@ -123,6 +123,16 @@ class ArticleListActivityTest {
         verifyNewsListSize(objResponse.articles.size * numberOfCountries)
     }
 
+    @Test fun switchTab() {
+        launchActivity(activityTestRule)
+        Thread.sleep(2000)
+        verifyScreen(false, R.string.prompt_select_countries)
+
+        onView(withId(R.id.action_favorites)).perform(click())
+        Thread.sleep(1000)
+        verifyScreen(false, R.string.prompt_empty_bookmark)
+    }
+
     @Test fun addArticlesToBookmarkAndSwitchTab() {
         val countries = setOf("us", "ca")
         preloadCountriesOfInterest(countries)
@@ -135,6 +145,7 @@ class ArticleListActivityTest {
 
         launchActivity(activityTestRule)
         Thread.sleep(3000)
+        verifyScreen(true)
 
         // add articles to bookmark
         val positionToClick = setOf(5, 10, 15)
@@ -149,6 +160,7 @@ class ArticleListActivityTest {
 
         // 3 bookmarks added
         verifyNewsListSize(positionToClick.size)
+        verifyScreen(true)
     }
 
     @Test fun openNews() {
@@ -192,9 +204,11 @@ class ArticleListActivityTest {
                 .apply()
     }
 
-    private fun verifyScreen(successful: Boolean) {
+    private fun verifyScreen(successful: Boolean, errorMsgId: Int = 0) {
         onView(withId(R.id.list)).check(matches(withEffectiveVisibility(if (successful) VISIBLE else GONE)))
         onView(withId(R.id.errorView)).check(matches(withEffectiveVisibility(if (successful) GONE else VISIBLE)))
+        if (!successful)
+            onView(withId(R.id.errorView)).check(matches(withText(errorMsgId)))
     }
 
     private fun verifyNewsListSize(size: Int) {
