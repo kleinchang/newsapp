@@ -6,4 +6,3 @@ captures/
 newsapp.iml
 local.properties
 .gradle/
-app/google-services.json
