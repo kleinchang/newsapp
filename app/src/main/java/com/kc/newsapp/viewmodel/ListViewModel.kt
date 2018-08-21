@@ -22,6 +22,7 @@ class ListViewModel(private val sharedPreferences: SharedPreferences, private va
     }
 
     private val gson by lazy { Gson() }
+    private var mForceUpdate: Boolean = false
 
     private val bookmarkLiveData = sharedPreferences.stringSetLiveData(KEY_BOOKMARKS, mutableSetOf())
     val bookmarks = MediatorLiveData<Set<String>>().apply {
@@ -46,6 +47,7 @@ class ListViewModel(private val sharedPreferences: SharedPreferences, private va
         addSource(countryOfInterestLiveData) {
             if (value != it) {
                 Util.log("CountryOfInterest: $value != $it")
+                mForceUpdate = false
                 value = it
             } else {
                 Util.log("CountryOfInterest: $value == $it")
@@ -54,13 +56,13 @@ class ListViewModel(private val sharedPreferences: SharedPreferences, private va
     }
 
     private val fetchedOutcome: LiveData<Listing<Articles>> = map(countryOfInterest, {
-        repo.fetchArticles(false, it)
+        repo.fetchArticles(mForceUpdate, it)
     })
 
     val articles: LiveData<Articles> = switchMap(fetchedOutcome, { it.articles })
 
     private val _loading: MutableLiveData<Boolean> = repo.loading
-    private val _error: LiveData<Boolean> = repo.error
+    private val _error: LiveData<String> = repo.error
 
     fun updateCountries(countries: Set<String>) {
         sharedPreferences.updateCountries(countries)
@@ -79,6 +81,7 @@ class ListViewModel(private val sharedPreferences: SharedPreferences, private va
     fun getError() = _error
 
     fun fetchArticles(forceUpdate: Boolean = false) {
+        mForceUpdate = forceUpdate
         if (combinedList().value == null || forceUpdate) {
             countryOfInterest.value = countryOfInterestLiveData.value
         }

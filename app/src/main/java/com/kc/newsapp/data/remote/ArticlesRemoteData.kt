@@ -12,7 +12,7 @@ class ArticlesRemoteData(private val service: ArticlesService) : Contract.Remote
 
     override val network = MutableLiveData<Articles>()
     override val loading = MutableLiveData<Boolean>()
-    override val error = MutableLiveData<Boolean>()
+    override val error = MutableLiveData<String>()
 
     override suspend fun fetchArticles(endpoint: String, countries: Set<String>) {
         Util.log("ArticlesRemoteData fetchArticles $countries")
@@ -28,12 +28,13 @@ class ArticlesRemoteData(private val service: ArticlesService) : Contract.Remote
                 if (it.isNotEmpty()) {
                     val response = Articles(articles = it.sortedByDescending { it.publishedAt })
                     network.postValue(response)
+                    error.postValue(null)
                 } else {
-                    error.postValue(true)
+                    error.postValue("")
                 }
             }
         } catch (e: Throwable) {
-            error.postValue(true)
+            error.postValue(e.message)
         } finally {
             loading.postValue(false)
         }

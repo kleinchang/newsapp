@@ -76,10 +76,9 @@ open class ArticleListFragment : Fragment() {
 
     private fun initErrorView(viewModel: ListViewModel) {
         viewModel.getError().observe(this, Observer {
-            if (it == true) {
-                Util.log("Error ->")
+            it?.let {
+                errorView.text = if (it.isNotEmpty()) it else getString(R.string.prompt_select_countries)
                 list.hide()
-                errorView.text = "Error"
                 errorView.show()
             }
         })

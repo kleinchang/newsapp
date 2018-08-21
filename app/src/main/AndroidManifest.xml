@@ -19,7 +19,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.WebViewActivity" />
+        <activity android:name=".ui.WebViewActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
     </application>
 
     <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />

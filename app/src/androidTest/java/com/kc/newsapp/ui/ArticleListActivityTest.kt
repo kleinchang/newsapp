@@ -1,11 +1,15 @@
 package com.kc.newsapp.ui
 
+import android.app.Activity
 import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.preference.PreferenceManager
 import android.support.test.InstrumentationRegistry
 import android.support.test.espresso.*
 import android.support.test.espresso.Espresso.*
 import android.support.test.espresso.action.ViewActions.click
+import android.support.test.espresso.action.ViewActions.swipeDown
 import android.support.test.espresso.assertion.ViewAssertions.matches
 import android.support.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import android.support.test.espresso.contrib.RecyclerViewActions.scrollToPosition
@@ -161,7 +165,23 @@ class ArticleListActivityTest {
         verifyScreen(true)
     }
 
-//    @Test fun startEmptyPullToRefresh() { }
+    @Test fun startEmptyPullToRefresh() {
+        mIdlingResource = launchActivity(activityTestRule)
+        verifyScreen(false, R.string.prompt_select_countries)
+
+        onView(withId(R.id.swipeRefresh)).perform(swipeDown())
+        verifyScreen(false, R.string.prompt_select_countries)
+
+        Thread.sleep(500)
+
+        rotateOrientation(activityTestRule.activity)
+        verifyScreen(false, R.string.prompt_select_countries)
+
+        onView(withId(R.id.swipeRefresh)).perform(swipeDown())
+        verifyScreen(false, R.string.prompt_select_countries)
+
+        Thread.sleep(500)
+    }
 
     @Test fun openNews() {
         val countries = setOf("ca")
@@ -215,6 +235,23 @@ class ArticleListActivityTest {
         onView(withId(R.id.list)).check(recyclerViewItemCountAssertion(size))
     }
 
+    private fun rotateOrientation(activity: Activity) {
+        val currentOrientation = activity.resources.configuration.orientation
+
+        when (currentOrientation) {
+            Configuration.ORIENTATION_LANDSCAPE -> rotateToPortrait(activity)
+            Configuration.ORIENTATION_PORTRAIT -> rotateToLandscape(activity)
+            else -> rotateToLandscape(activity)
+        }
+    }
+
+    private fun rotateToLandscape(activity: Activity) {
+        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    }
+
+    private fun rotateToPortrait(activity: Activity) {
+        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    }
 
     private fun getApplication() = InstrumentationRegistry.getTargetContext().applicationContext as App
 
