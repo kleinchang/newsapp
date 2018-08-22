@@ -22,11 +22,10 @@ class ListViewModel(private val sharedPreferences: SharedPreferences, private va
     }
 
     private val gson by lazy { Gson() }
-    private var mForceUpdate: Boolean = false
 
-    private val bookmarkLiveData = sharedPreferences.stringSetLiveData(KEY_BOOKMARKS, mutableSetOf())
-    val bookmarks = MediatorLiveData<Set<String>>().apply {
-        addSource(bookmarkLiveData) {
+    private var bookmarksLiveData = sharedPreferences.stringSetLiveData(KEY_BOOKMARKS, mutableSetOf())
+    val bookmarkTitles = MediatorLiveData<Set<String>>().apply {
+        addSource(bookmarksLiveData) {
             if (value != it) {
                 Util.log("Bookmarks: $value != $it")
                 value = it
@@ -47,7 +46,6 @@ class ListViewModel(private val sharedPreferences: SharedPreferences, private va
         addSource(countryOfInterestLiveData) {
             if (value != it) {
                 Util.log("CountryOfInterest: $value != $it")
-                mForceUpdate = false
                 value = it
             } else {
                 Util.log("CountryOfInterest: $value == $it")
@@ -56,7 +54,7 @@ class ListViewModel(private val sharedPreferences: SharedPreferences, private va
     }
 
     private val fetchedOutcome: LiveData<Listing<Articles>> = map(countryOfInterest, {
-        repo.fetchArticles(mForceUpdate, it)
+        repo.fetchArticles(false, it)
     })
 
     val articles: LiveData<Articles> = switchMap(fetchedOutcome, { it.articles })
@@ -76,14 +74,20 @@ class ListViewModel(private val sharedPreferences: SharedPreferences, private va
         sharedPreferences.updateBookmarkContent(article)
     }
 
-    fun combinedList(): LiveData<Articles> = articles
+    fun combinedList(): MutableLiveData<Articles> = articles as MutableLiveData<Articles>
     fun getLoading() = _loading
     fun getError() = _error
+    val promptMessage = MutableLiveData<String>()
+
+    fun showPrompt(text: String) {
+        promptMessage.value = text
+    }
 
     fun fetchArticles(forceUpdate: Boolean = false) {
-        mForceUpdate = forceUpdate
         if (combinedList().value == null || forceUpdate) {
-            countryOfInterest.value = countryOfInterestLiveData.value
+            countryOfInterest.value?.let {
+                repo.fetchArticles(forceUpdate, it)
+            }
         }
     }
 }

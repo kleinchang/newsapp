@@ -23,7 +23,7 @@ class ArticlesRemoteDataTest {
     @Mock private lateinit var article: Article
     @Mock private lateinit var networkObserver: Observer<Articles>
     @Mock private lateinit var loadingObserver: Observer<Boolean>
-    @Mock private lateinit var errorObserver: Observer<Boolean>
+    @Mock private lateinit var errorObserver: Observer<String>
 
     private val emptyResponse = Articles()
     private lateinit var response: Articles
@@ -53,7 +53,7 @@ class ArticlesRemoteDataTest {
         inOrder.verify(loadingObserver).onChanged(false)
 
         verify(networkObserver).onChanged(Articles(articles = articleList(countries.size)))
-        verify(errorObserver, never()).onChanged(true)
+        verify(errorObserver).onChanged(null)
     }
 
     @Test fun fetchHeadlinesFrom3Countries_noResponse() {
@@ -71,7 +71,7 @@ class ArticlesRemoteDataTest {
         inOrder.verify(loadingObserver).onChanged(false)
 
         verify(networkObserver, never()).onChanged(any())
-        verify(errorObserver).onChanged(true)
+        verify(errorObserver).onChanged("")
     }
 
     @Test fun fetchHeadlinesFrom3Countries_partialResponse() {
@@ -92,7 +92,7 @@ class ArticlesRemoteDataTest {
         inOrder.verify(loadingObserver).onChanged(false)
 
         verify(networkObserver, never()).onChanged(any())
-        verify(errorObserver).onChanged(true)
+        verify(errorObserver).onChanged(null)
     }
 
     private fun articleList(count: Int): List<Article> {

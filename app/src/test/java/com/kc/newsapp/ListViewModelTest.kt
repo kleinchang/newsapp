@@ -3,7 +3,7 @@ package com.kc.newsapp
 import android.arch.lifecycle.Observer
 import android.content.SharedPreferences
 import com.kc.newsapp.data.ArticlesRepository
-import com.kc.newsapp.data.Listing
+import com.kc.newsapp.data.model.Article
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.viewmodel.ListViewModel
 import com.kc.newsapp.viewmodel.ListViewModel.Companion.KEY_COUNTRIES
@@ -20,38 +20,57 @@ class ListViewModelTest {
 
     private lateinit var viewModel: ListViewModel
 
-    @Captor private lateinit var dataCallbackCaptor: ArgumentCaptor<Set<String>>
-    @Captor private lateinit var booleanCallbackCaptor: ArgumentCaptor<Boolean>
-
     @Mock private lateinit var repository: ArticlesRepository
     @Mock private lateinit var sharedPreferences: SharedPreferences
-    @Mock private lateinit var dataObserver: Observer<String>
+    @Mock private lateinit var article: Article
+    private lateinit var articles: Articles
+
     @Mock private lateinit var countriesObserver: Observer<Set<String>>
-    @Mock private lateinit var sharedPreferencesObserver: Observer<Set<String>>
-    @Mock private lateinit var resultObserver: Observer<Listing<Articles>>
+
+    @Mock private lateinit var promptObserver: Observer<String>
 
     @Before fun init() {
         MockitoAnnotations.initMocks(this)
         viewModel = ListViewModel(sharedPreferences, repository)
+        articles = Articles(articles = listOf(article, article, article))
     }
 
-    @Test fun preloadCountriesOfInterest() {
+    @Test fun selectCountriesOfInterest() {
         val countries = setOf("be", "br", "bg")
-
         `when`(sharedPreferences.getStringSet(KEY_COUNTRIES, setOf())).thenReturn(countries)
 
-        //viewModel.sharedPreferenceLiveData.observeForever(sharedPreferencesObserver)
         viewModel.countryOfInterest.observeForever(countriesObserver)
-        //viewModel.fetchedOutcome.observeForever(resultObserver)
-
-        //viewModel.fetchArticles(true)
-        //verify(sharedPreferencesObserver).onChanged(countries)
         verify(countriesObserver).onChanged(countries)
-        //verify(resultObserver).onChanged(any())
+    }
 
+    @Test fun addToBookmark() {
+        val msg = "Sample Message"
+        viewModel.promptMessage.observeForever(promptObserver)
+        viewModel.showPrompt(msg)
+        verify(promptObserver).onChanged(msg)
+    }
 
-//        verify(repository).fetchArticles(capture(booleanCallbackCaptor), capture(dataCallbackCaptor))
-//        Assert.assertEquals(booleanCallbackCaptor.value, true)
-//        Assert.assertEquals(dataCallbackCaptor.value.size, 10)
+    @Test fun emptyCountriesOfInterest_emptyList_rotate() {
+        viewModel.combinedList().value = null
+        viewModel.fetchArticles()
+        verify(repository, times(0)).fetchArticles(false, emptySet())
+    }
+
+    @Test fun presetCountriesOfInterest_withLoadedList_rotate() {
+        val presetCountries = setOf("ar")
+        viewModel.countryOfInterest.value = presetCountries
+
+        viewModel.combinedList().value = articles
+        viewModel.fetchArticles()
+        verify(repository, times(0)).fetchArticles(false, presetCountries)
+    }
+
+    @Test fun presetCountriesOfInterest_withLoadedList_pullToRefresh() {
+        val presetCountries = setOf("ar")
+        viewModel.countryOfInterest.value = presetCountries
+
+        viewModel.combinedList().value = articles
+        viewModel.fetchArticles(true)
+        verify(repository, times(1)).fetchArticles(true, presetCountries)
     }
 }

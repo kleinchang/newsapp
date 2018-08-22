@@ -11,6 +11,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.kc.newsapp.R
 import com.kc.newsapp.testing.EspressoIdlingResource
 import com.kc.newsapp.util.Util
@@ -39,12 +40,13 @@ open class ArticleListFragment : Fragment() {
             initRecyclerView(it)
             initSwipeToRefresh(it)
             initErrorView(it)
+            initPromptListener(it)
         }.apply {
             fetchArticles()
         }
 
-        viewModel.bookmarks.observe(activity!!, Observer {
-            Util.log("liveData in ViewModel bookmarks $it")
+        viewModel.bookmarkTitles.observe(activity!!, Observer {
+            Util.log("viewModel.bookmarkTitles $it")
         })
     }
 
@@ -53,16 +55,18 @@ open class ArticleListFragment : Fragment() {
     }
 
     open fun initRecyclerView(viewModel: ListViewModel) {
-        rvAdapter = ArticlesAdapter(viewModel.bookmarks, { url -> openArticle(url) } ) {
+        rvAdapter = ArticlesAdapter(viewModel.bookmarkTitles, { url -> openArticle(url) } ) {
             position, article ->
             viewModel.updateBookmarkKeys(article.title)
             viewModel.updateBookmarkContent(article)
             rvAdapter.notifyItemChanged(position)
+            viewModel.showPrompt("${article.title} is added to bookmark")
         }
         LinearLayoutManager(activity).let {
             list.layoutManager = it
             list.addItemDecoration(DividerItemDecoration(list.context, it.orientation))
         }
+        list.setHasFixedSize(true)
         list.adapter = rvAdapter
 
         viewModel.combinedList().observe(this, Observer {
@@ -74,6 +78,12 @@ open class ArticleListFragment : Fragment() {
         })
     }
 
+    private fun initPromptListener(viewModel: ListViewModel) {
+        viewModel.promptMessage.observe(this, Observer {
+            it?.let { showPrompt(it) }
+        })
+    }
+
     private fun initErrorView(viewModel: ListViewModel) {
         viewModel.getError().observe(this, Observer {
             it?.let {
@@ -82,6 +92,10 @@ open class ArticleListFragment : Fragment() {
                 errorView.show()
             }
         })
+    }
+
+    private fun showPrompt(text: String) {
+        Toast.makeText(context, text, Toast.LENGTH_LONG).show()
     }
 
     open fun initSwipeToRefresh(viewModel: ListViewModel) {

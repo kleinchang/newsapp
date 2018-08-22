@@ -9,8 +9,6 @@ import com.kc.newsapp.R
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.util.hide
 import com.kc.newsapp.util.show
-import com.kc.newsapp.util.updateBookmarkContent
-import com.kc.newsapp.util.updateBookmarkKeys
 import com.kc.newsapp.viewmodel.ListViewModel
 import kotlinx.android.synthetic.main.activity_article_list.*
 
@@ -20,7 +18,7 @@ class BookmarkFragment : ArticleListFragment() {
     private val handler by lazy { Handler(Looper.getMainLooper()) }
 
     override fun initRecyclerView(viewModel: ListViewModel) {
-        rvAdapter = ArticlesAdapter(viewModel.bookmarks, { url -> openArticle(url) }, true) {
+        rvAdapter = ArticlesAdapter(viewModel.bookmarkTitles, { url -> openArticle(url) }, true) {
             position, article ->
             rvAdapter.apply {
                 list.removeAt(position)
