@@ -12,4 +12,6 @@
     <string name="prompt_select_countries">Please select countries of interest first.</string>
     <string name="title_select_countries">Countries of Interest</string>
 
+    <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
+
 </resources>

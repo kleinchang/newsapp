@@ -80,6 +80,8 @@ dependencies {
     implementation 'com.crashlytics.sdk.android:crashlytics:2.9.3'
     implementation 'com.google.firebase:firebase-core:16.0.0'
 
+    implementation 'com.google.firebase:firebase-messaging:17.1.0'
+
     // Testing
     androidTestImplementation "com.squareup.okhttp3:mockwebserver:${versions.okhttp}"
     androidTestImplementation "org.mockito:mockito-core:2.7.19"

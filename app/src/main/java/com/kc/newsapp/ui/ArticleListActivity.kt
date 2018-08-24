@@ -8,6 +8,7 @@ import android.support.annotation.VisibleForTesting
 import android.support.v7.app.AlertDialog
 import android.view.Menu
 import android.view.MenuItem
+import com.google.firebase.iid.FirebaseInstanceId
 import com.kc.newsapp.data.ArticlesRepository
 import com.kc.newsapp.data.local.ArticlesLocalData
 import com.kc.newsapp.data.remote.ArticlesRemoteData
@@ -18,6 +19,7 @@ import kotlinx.android.synthetic.main.activity_article_list.*
 import kotlinx.android.synthetic.main.activity_main.*
 import com.kc.newsapp.*
 import com.kc.newsapp.testing.EspressoIdlingResource
+import com.kc.newsapp.util.Util
 import javax.inject.Inject
 
 
@@ -60,6 +62,10 @@ class ArticleListActivity : AppCompatActivity() {
                     true
                 }
             }
+        }
+
+        FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener {
+            Util.log("ArticleListActivity token: ${it.token}")
         }
 
         viewModel = getViewModel()
