@@ -1,4 +1,4 @@
-# newsapp
+# Global News Bookmark
 A news aggregator that allows users to configure the sources of countries to subscribe. Users can save articles in their bookmark to read later as well.
 
 <p align="center">
