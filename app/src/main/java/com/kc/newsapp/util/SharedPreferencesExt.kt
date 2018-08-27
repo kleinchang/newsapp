@@ -5,7 +5,6 @@ import android.view.View
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.kc.newsapp.data.model.Article
-import com.kc.newsapp.ui.log
 import com.kc.newsapp.viewmodel.ListViewModel
 import com.kc.newsapp.viewmodel.ListViewModel.Companion.KEY_BOOKMARKS_JSON
 
@@ -21,10 +20,8 @@ fun SharedPreferences.updateBookmarkKeys(title: String) {
     originalSet.forEach { currentSet.add(it) }
     if (currentSet.contains(title)) {
         currentSet.remove(title)
-        log("remove $title from ${currentSet.size}")
     } else {
         currentSet.add(title)
-        log("add $title into ${currentSet.size}")
     }
     updateStringSet(currentSet, ListViewModel.KEY_BOOKMARKS)
 }
@@ -42,7 +39,7 @@ fun SharedPreferences.updateBookmarkContent(article: Article) {
     if (articleToRemove != null)
         articles.remove(articleToRemove)
     else
-        articles.add(article)
+        articles.add(0, article)
 
     edit().putString(KEY_BOOKMARKS_JSON, gson.toJson(articles)).apply()
 }

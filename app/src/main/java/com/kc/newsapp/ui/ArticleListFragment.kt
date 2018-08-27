@@ -1,29 +1,24 @@
 package com.kc.newsapp.ui
 
-import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.annotation.VisibleForTesting
 import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.kc.newsapp.R
-import com.kc.newsapp.data.ArticlesRepository
-import com.kc.newsapp.data.local.ArticlesLocalData
-import com.kc.newsapp.data.remote.ArticlesRemoteData
-import com.kc.newsapp.data.remote.ArticlesService
+import com.kc.newsapp.testing.EspressoIdlingResource
+import com.kc.newsapp.util.Util
 import com.kc.newsapp.util.hide
 import com.kc.newsapp.util.show
-import com.kc.newsapp.util.updateBookmarkContent
-import com.kc.newsapp.util.updateBookmarkKeys
 import com.kc.newsapp.viewmodel.ListViewModel
-import com.kc.newsapp.viewmodel.ListViewModelFactory
 import kotlinx.android.synthetic.main.activity_article_list.*
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.launch
 
 /**
  * Created by kaichang on 18/7/18.
@@ -45,41 +40,36 @@ open class ArticleListFragment : Fragment() {
             initRecyclerView(it)
             initSwipeToRefresh(it)
             initErrorView(it)
+            initPromptListener(it)
         }.apply {
             fetchArticles()
         }
 
-        viewModel.bookmarks.observe(this, Observer {
-            log("liveData in ViewModel bookmarks $it")
+        viewModel.bookmarkTitles.observe(activity!!, Observer {
+            Util.log("viewModel.bookmarkTitles $it")
         })
     }
 
-    private fun getViewModel(activity: Activity): ListViewModel {
-        val repo = ArticlesRepository(ArticlesLocalData(activity.applicationContext), ArticlesRemoteData(ArticlesService()))
-        return ViewModelProviders.of(this, ListViewModelFactory(activity.applicationContext, repo))[ListViewModel::class.java]
+    private fun getViewModel(activity: FragmentActivity): ListViewModel {
+        return ViewModelProviders.of(activity)[ListViewModel::class.java]
     }
 
     open fun initRecyclerView(viewModel: ListViewModel) {
-        rvAdapter = ArticlesAdapter(viewModel.bookmarks, { url -> openArticle(url) } ) {
+        rvAdapter = ArticlesAdapter(viewModel.bookmarkTitles, { url -> openArticle(url) } ) {
             position, article ->
-            viewModel.sharedPreferences.updateBookmarkKeys(article.title)
-            viewModel.sharedPreferences.updateBookmarkContent(article)
+            viewModel.updateBookmarkKeys(article.title)
+            viewModel.updateBookmarkContent(article)
             rvAdapter.notifyItemChanged(position)
+            viewModel.showPrompt("${article.title} is added to bookmark")
         }
         LinearLayoutManager(activity).let {
             list.layoutManager = it
             list.addItemDecoration(DividerItemDecoration(list.context, it.orientation))
         }
+        list.setHasFixedSize(true)
         list.adapter = rvAdapter
 
-        viewModel.getCombinedList().observe(this, Observer {
-            it?.let {
-                launch (UI) {
-                    viewModel.articles.value = it.await()
-                }
-            }
-        })
-        viewModel.articles.observe(this, Observer {
+        viewModel.combinedList().observe(this, Observer {
             it?.let {
                 rvAdapter.data = it
                 list.show()
@@ -88,24 +78,36 @@ open class ArticleListFragment : Fragment() {
         })
     }
 
+    private fun initPromptListener(viewModel: ListViewModel) {
+        viewModel.promptMessage.observe(this, Observer {
+            it?.let { showPrompt(it) }
+        })
+    }
+
     private fun initErrorView(viewModel: ListViewModel) {
         viewModel.getError().observe(this, Observer {
-            if (it == true) {
-                log("Error ->")
+            it?.let {
+                errorView.text = if (it.isNotEmpty()) it else getString(R.string.prompt_select_countries)
                 list.hide()
                 errorView.show()
             }
         })
     }
 
-    private fun initSwipeToRefresh(viewModel: ListViewModel) {
+    private fun showPrompt(text: String) {
+        Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+    }
+
+    open fun initSwipeToRefresh(viewModel: ListViewModel) {
         viewModel.getLoading().observe(this, Observer {
-            log("getLoading $it")
             if (it != null) {
                 swipeRefresh.isRefreshing = it
                 if (it) {
+                    setIsAppBusy(true)
                     errorView.hide()
                     list.hide()
+                } else {
+                    setIsAppBusy(false)
                 }
             }
         })
@@ -116,6 +118,16 @@ open class ArticleListFragment : Fragment() {
 
     protected fun openArticle(url: String) {
         context?.let { WebViewActivity.open(it, url) }
+    }
+
+    @VisibleForTesting
+    private fun setIsAppBusy(busy: Boolean) {
+        if (busy) {
+            EspressoIdlingResource.increment() // App is busy until further notice
+        } else {
+            if (!EspressoIdlingResource.countingIdlingResource.isIdleNow)
+                EspressoIdlingResource.decrement() // Set app as idle.
+        }
     }
 
     companion object {

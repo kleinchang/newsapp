@@ -1,23 +1,34 @@
 package com.kc.newsapp.ui
 
 import android.arch.lifecycle.Observer
+import android.os.Handler
+import android.os.Looper
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
+import com.kc.newsapp.R
 import com.kc.newsapp.data.model.Articles
 import com.kc.newsapp.util.hide
 import com.kc.newsapp.util.show
-import com.kc.newsapp.util.updateBookmarkKeys
 import com.kc.newsapp.viewmodel.ListViewModel
 import kotlinx.android.synthetic.main.activity_article_list.*
 
 
 class BookmarkFragment : ArticleListFragment() {
 
+    private val handler by lazy { Handler(Looper.getMainLooper()) }
+
     override fun initRecyclerView(viewModel: ListViewModel) {
-        rvAdapter = ArticlesAdapter(viewModel.bookmarks, { url -> openArticle(url) }) {
+        rvAdapter = ArticlesAdapter(viewModel.bookmarkTitles, { url -> openArticle(url) }, true) {
             position, article ->
-            viewModel.sharedPreferences.updateBookmarkKeys(article.title)
-            rvAdapter.notifyItemChanged(position)
+            rvAdapter.apply {
+                list.removeAt(position)
+                notifyItemRemoved(position)
+                notifyItemChanged(position)
+            }
+            handler.postDelayed({
+                viewModel.updateBookmarkKeys(article.title)
+                viewModel.updateBookmarkContent(article)
+            }, 1000)
         }
         LinearLayoutManager(activity).let {
             list.layoutManager = it
@@ -26,12 +37,18 @@ class BookmarkFragment : ArticleListFragment() {
         list.adapter = rvAdapter
 
         viewModel.bookmarkArticleList.observe(this, Observer {
-            it?.let {
+            if (it?.isNotEmpty() == true) {
                 rvAdapter.data = Articles(articles = it)
                 list.show()
                 errorView.hide()
+            } else {
+                errorView.text = getString(R.string.prompt_empty_bookmark)
             }
         })
+    }
+
+    override fun initSwipeToRefresh(viewModel: ListViewModel) {
+        swipeRefresh.isEnabled = false
     }
 
     companion object {

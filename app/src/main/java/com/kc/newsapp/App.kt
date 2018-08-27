@@ -1,9 +1,12 @@
 package com.kc.newsapp
 
 import android.app.Application
+import android.support.annotation.VisibleForTesting
+import com.crashlytics.android.Crashlytics
 import com.kc.newsapp.di.AppComponent
 import com.kc.newsapp.di.AppModule
 import com.kc.newsapp.di.DaggerAppComponent
+import io.fabric.sdk.android.Fabric
 
 
 class App : Application() {
@@ -16,5 +19,14 @@ class App : Application() {
         super.onCreate()
         appComponent = DaggerAppComponent.builder()
                 .appModule(AppModule(this)).build()
+
+        Fabric.Builder(this).kits(Crashlytics()).debuggable(true).build().let {
+            Fabric.with(it)
+        }
+    }
+
+    @VisibleForTesting
+    fun setComponent(component: AppComponent) {
+        appComponent = component
     }
 }

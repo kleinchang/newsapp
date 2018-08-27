@@ -70,4 +70,5 @@ deploy:
   region: ap-southeast-2
   on:
     repo: kleinchang/newsapp
-    branch: master
+    all_branches: true
+    # branch: master

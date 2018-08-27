@@ -10,7 +10,7 @@ buildscript {
             'gson'            : '2.8.2',
             'archComp'        : '1.1.0',
             'mockito'         : '2.7.19',
-            'espresso'        : '3.0.1',
+            'espresso'        : '3.0.2',
             'atsl'            : '1.0.0',
             'robolectric'     : '3.8',
             'daggerVersion'   : '2.14.1',
@@ -24,7 +24,9 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.0-alpha18'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-allopen:1.2.20"
 
+        classpath 'com.google.gms:google-services:4.0.0'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
