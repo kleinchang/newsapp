@@ -1,12 +1,15 @@
 <resources>
-    <string name="app_name">NewsApp</string>
+    <string name="app_name">Global News Bookmark</string>
 
-    <string name="title">Country of Interest</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
 
     <string name="text_favorites">Favorites</string>
     <string name="text_schedules">Live</string>
     <string name="text_music">Music</string>
+
+    <string name="prompt_empty_bookmark">No bookmark item.</string>
+    <string name="prompt_select_countries">Please select countries of interest first.</string>
+    <string name="title_select_countries">Countries of Interest</string>
 
 </resources>

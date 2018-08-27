@@ -28,9 +28,6 @@ jobs:
       - run:
           name: Run UI Test
           command: ./gradlew connectedAndroidTest
-      - run:
-          name: Run Lint Test
-          command: ./gradlew lint test
       - store_artifacts:
           path: app/build/reports
           destination: reports
